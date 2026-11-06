@@ -2,11 +2,13 @@
 const http=require('http'),fs=require('fs'),path=require('path'),crypto=require('crypto');
 const PORT=process.env.PORT||3000,PUB=path.join(__dirname,'public');
 const MIME={'.html':'text/html; charset=utf-8','.js':'text/javascript','.css':'text/css','.json':'application/json','.png':'image/png','.svg':'image/svg+xml','.ico':'image/x-icon'};
+const VERSION=process.env.RENDER_GIT_COMMIT||process.env.GIT_COMMIT||String(Date.now());
 const rooms=new Map(),clients=new Set();
 
 const srv=http.createServer((req,res)=>{
  let u=decodeURIComponent(req.url.split('?')[0]);
  if(u==='/healthz'){res.end('ok');return;}
+ if(u==='/version'){res.writeHead(200,{'Content-Type':'application/json','Cache-Control':'no-store'});res.end(JSON.stringify({v:VERSION}));return;}
  if(u==='/')u='/index.html';
  const f=path.join(PUB,u);
  if(f!==PUB&&!f.startsWith(PUB+path.sep)){res.writeHead(403);return res.end();}

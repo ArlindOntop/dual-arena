@@ -294,6 +294,17 @@ function remote(g,me){const r=NET.nr.peers().find(p=>p.peer===NET.opp);
  if(p.hs>NET.sh){NET.sh=p.hs;const h=p.hit;if(h&&h.r===G.round&&!me.ko&&me.inv<=0&&G.state==='fight')resolve({x:h.x,y:h.y,act:h.a,chain:h.c,i:NET.o,col:g.col,counter:0,sp:0,combo:0,comboT:0,stun:0,hd:0},me,atkW(g.wp,h.a),h.d);}
  if(p.ps>NET.sps){NET.sps=p.ps;me.stun=.8;me.act=null;me.kx=-Math.cos(me.face)*200;me.ky=-Math.sin(me.face)*200;pop(me.x,me.y-80,'PARRIED','#ff6b6b');}}
 function leftGame(){if(!G||G.state==='over')return;G.state='over';$('again').hidden=true;$('rt').textContent='Opponent left';$('rs').textContent='The match ended.';$('res').hidden=false;}
+(function(){if(!/^https?:/.test(location.protocol))return;
+ let v0=null,fails=0,locked=false;
+ const box=document.createElement('div');box.style.cssText='position:fixed;inset:0;z-index:99;display:none;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:rgba(15,20,32,.97);color:#eef1f8;font:600 18px system-ui;text-align:center;padding:20px';
+ box.innerHTML='<div style="font-size:30px">Updating the game</div><div style="color:#93a0ba;font-weight:500">A new version is being installed. This page reloads by itself in about a minute.</div>';
+ document.body.appendChild(box);
+ const get=()=>fetch('/version',{cache:'no-store'}).then(r=>r.ok?r.json():Promise.reject()).then(j=>j.v);
+ function lock(){if(locked)return;locked=true;box.style.display='flex';if(typeof leaveNet==='function')try{leaveNet();}catch(e){}
+  const t=setInterval(()=>get().then(v=>{clearInterval(t);location.reload();}).catch(()=>{}),3000);}
+ get().then(v=>v0=v).catch(()=>{});
+ setInterval(()=>{if(locked)return;get().then(v=>{fails=0;if(v0===null)v0=v;else if(v!==v0)lock();}).catch(()=>{if(++fails>=2)lock();});},10000);
+})();
 let last=performance.now();
 function loop(n){const dt=Math.min(.033,(n-last)/1000);last=n;update(dt);draw();requestAnimationFrame(loop);}
 requestAnimationFrame(loop);
