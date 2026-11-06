@@ -1,0 +1,1 @@
+{"name":"duel-arena","version":"1.0.0","private":true,"description":"1v1 fighting game with online matchmaking","scripts":{"start":"node server.js"},"engines":{"node":">=18"}}
