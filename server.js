@@ -33,7 +33,7 @@ function handle(c,s){
  if(m.t==='join'){
   if(c.rooms.has(name)||c.rooms.size>=3)return;
   let r=rooms.get(name);
-  if(r&&r.size>=(name==='lobby'?300:2)){tx(c,{t:'err',room:name,code:'full'});return;}
+  if(r&&r.size>=(name==='lobby'?300:name[0]==='g'?4:2)){tx(c,{t:'err',room:name,code:'full'});return;}
   if(!r)rooms.set(name,r=new Map());
   r.set(c.id,{c,p:{}});c.rooms.add(name);
   tx(c,{t:'state',room:name,you:c.id,peers:[...r].map(([id,e])=>({id,p:e.p}))});
