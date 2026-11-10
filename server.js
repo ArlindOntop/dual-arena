@@ -13,7 +13,7 @@ const CODE=/^[A-HJ-NP-Z2-9]{10}$/,ID=/^[a-z0-9_]{1,24}$/,rl=new Map();
 const limited=ip=>{const n=Date.now(),a=(rl.get(ip)||[]).filter(t=>n-t<60000);a.push(n);rl.set(ip,a);return a.length>40;};
 const ids=a=>Array.isArray(a)?[...new Set(a.filter(x=>typeof x==='string'&&ID.test(x)))].slice(0,40):[];
 function clean(d){if(!d||typeof d!=='object')return null;const n=(v,max)=>Number.isFinite(v)?Math.max(0,Math.min(max,Math.floor(v))):0,sel=d.sel&&typeof d.sel==='object'?d.sel:{};
- return{coins:n(d.coins,1e7),ch:ids(d.ch),cw:ids(d.cw),ar:ids(d.ar),r:n(d.r,5000),u:d.u?1:0,sel:{wp:ID.test(sel.wp)?sel.wp:'',cw:ID.test(sel.cw)?sel.cw:'',ar:ID.test(sel.ar)?sel.ar:''}};}
+ return{v:n(d.v,9),coins:n(d.coins,1e7),ch:ids(d.ch),cw:ids(d.cw),ar:ids(d.ar),r:n(d.r,5000),u:d.u?1:0,sel:{wp:ID.test(sel.wp)?sel.wp:'',cw:ID.test(sel.cw)?sel.cw:'',ar:ID.test(sel.ar)?sel.ar:''}};}
 function api(req,res,u,q){
  const out=(c,o)=>{res.writeHead(c,{'Content-Type':'application/json','Cache-Control':'no-store'});res.end(JSON.stringify(o));};
  const ip=(req.headers['x-forwarded-for']||req.socket.remoteAddress||'').split(',')[0].trim();

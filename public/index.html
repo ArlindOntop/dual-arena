@@ -120,6 +120,7 @@ const CWS={def:{n:'Default'},neon:{n:'Neon Pulse',col:'#39ff88'},ember:{n:'Ember
 const ARS={classic:{n:'Classic',c0:'#33406a',c1:'#222c4d',c2:'#171e38',rim:'#7f9cff',line:'#3a4a7c',sh:'#0b1020'},neon:{n:'Neon Grid',c0:'#1d2e3a',c1:'#102029',c2:'#09131a',rim:'#35e0c8',line:'#1e6f66',sh:'#050b10'},sunset:{n:'Sunset Dojo',c0:'#6a3a58',c1:'#472743',c2:'#2a1530',rim:'#ff9a5c',line:'#7a4666',sh:'#150a1a'},toxic:{n:'Toxic Pit',c0:'#2f4a2c',c1:'#1f3320',c2:'#12200f',rim:'#9dff4d',line:'#3f6a3a',sh:'#08120a'},ice:{n:'Ice Rink',c0:'#6b8fb0',c1:'#4a6c8e',c2:'#2f4764',rim:'#d8f2ff',line:'#86a9c9',sh:'#0b1826'}};
 let TH=ARS.classic,cwc=null;
 let INV={coins:200,ch:[],cw:['def'],ar:['classic']};try{const j=JSON.parse(localStorage.getItem('daInv')||'null');if(j&&typeof j.coins==='number')INV={coins:Math.max(0,j.coins|0),ch:Array.isArray(j.ch)?j.ch:[],cw:Array.isArray(j.cw)?j.cw:['def'],ar:Array.isArray(j.ar)?j.ar:['classic']};}catch(e){}
+try{if(localStorage.getItem('daInvV')!=='2'){if(INV.coins>2000)INV.coins=2000;localStorage.setItem('daInvV','2');localStorage.setItem('daInv',JSON.stringify(INV));}}catch(e){}
 const saveInv=()=>{try{localStorage.setItem('daInv',JSON.stringify(INV));}catch(e){}cloudSave();};
 const owns=k=>FREE_CH.includes(k)||INV.ch.includes(k)||(CH[k]&&CH[k].secret);
 function award(n){INV.coins+=n;saveInv();refreshCoins();return n;}
@@ -138,14 +139,14 @@ $('shopb').onclick=()=>{$('menu').hidden=true;$('shop').hidden=false;renderShop(
 $('sback').onclick=()=>{$('shop').hidden=true;$('menu').hidden=false;};
 // ---- mini account: code + auto-save, and an offline backup code ----
 const ACC={code:(()=>{try{return localStorage.getItem('daAcc')||'';}catch(e){return '';}})()};
-const snap=()=>({coins:INV.coins,ch:INV.ch,cw:INV.cw,ar:INV.ar,r:rating,u:UNL?1:0,sel:{wp:$('wp').value,cw:$('cw').value,ar:$('ar').value}});
+const snap=()=>({v:2,coins:INV.coins,ch:INV.ch,cw:INV.cw,ar:INV.ar,r:rating,u:UNL?1:0,sel:{wp:$('wp').value,cw:$('cw').value,ar:$('ar').value}});
 const accMsg=(t,bad)=>{const e=$('accMsg');e.textContent=t;e.style.color=bad?'#ff8a8a':'#8fe3b0';};
 function showAcc(){const on=!!ACC.code;$('accOff').hidden=on;$('accOn').hidden=!on;$('accCode').textContent=ACC.code;}
 let saveT=null;
 function postSave(){return fetch('/api/save',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code:ACC.code,data:snap()})}).then(r=>r.ok?1:Promise.reject());}
 function cloudSave(){if(!ACC.code)return;clearTimeout(saveT);saveT=setTimeout(()=>{postSave().then(()=>accMsg('Saved ✓')).catch(()=>accMsg('Couldn’t reach the server. Progress is still kept on this device.',1));},800);}
 function applyData(d){const ids=a=>Array.isArray(a)?a.filter(x=>typeof x==='string').slice(0,40):[];
- INV.coins=Math.max(0,d.coins|0);INV.ch=ids(d.ch);INV.cw=ids(d.cw).length?ids(d.cw):['def'];INV.ar=ids(d.ar).length?ids(d.ar):['classic'];
+ INV.coins=Math.max(0,d.coins|0);if((d.v|0)<2&&INV.coins>2000)INV.coins=2000;INV.ch=ids(d.ch);INV.cw=ids(d.cw).length?ids(d.cw):['def'];INV.ar=ids(d.ar).length?ids(d.ar):['classic'];
  rating=Math.max(0,d.r|0)||1000;try{localStorage.setItem('daRating',rating);}catch(e){}
  if(d.u){UNL=true;try{localStorage.setItem('daU','1');}catch(e){}}
  try{localStorage.setItem('daInv',JSON.stringify(INV));}catch(e){}
@@ -354,9 +355,9 @@ function brTick(dt){G.ft+=dt;const me=G.f[0];G.sr=Math.max(220,R-Math.max(0,G.ft
  for(const f of G.f){if(f.ko)continue;if(Math.hypot(f.x,f.y)>G.sr){f.hp-=8*dt;if(f.hp<=0){f.hp=0;f.ko=true;}}}
  const al=G.f.filter(q=>!q.ko);for(const f of G.f)if(f.ko&&!f.pl){f.pl=al.length+1;if(f!==me&&f.lh===0){G.kills++;pop(f.x,f.y-90,'+'+Math.round(KILL_COINS*dm())+' coins','#ffd166');}}
  if(al.length<=1||me.ko){G.state='end';G.st=2.4;G.w=al[0]?al[0].i:0;G.ending=true;}}
-function finishBR(){G.state='over';$('again').hidden=false;const me=G.f[0],al=G.f.filter(q=>!q.ko),won=!me.ko&&al.length<=1,p=won?1:(me.pl||12);
+function finishBR(){if(G.state==='over')return;G.state='over';$('again').hidden=false;const me=G.f[0],al=G.f.filter(q=>!q.ko),won=!me.ko&&al.length<=1,p=won?1:(me.pl||12);
  $('rt').textContent=won?'Victory Royale!':'Eliminated · #'+p+' of 12';$('rs').textContent=(won?'Last one standing. ':'You placed #'+p+' of 12. ')+'Survived '+Math.round(G.ft)+'s · '+G.kills+' kill'+(G.kills===1?'':'s')+' · +'+award(Math.round(G.kills*KILL_COINS*dm()))+' coins ('+DIFFN[G.lv]+' ×'+dm()+')';$('res').hidden=false;}
-function finish(){if(G.mode==='br')return finishBR();G.state='over';$('again').hidden=!!G.net;const mt=G.net?G.f[G.net.me].team:0,won=G.wins[mt]>=2,tn=G.tnames,wt=won?mt:1-mt;let s=tn[wt]+' wins '+G.wins[wt]+'–'+G.wins[1-wt];
+function finish(){if(G.state==='over')return;if(G.mode==='br')return finishBR();G.state='over';$('again').hidden=!!G.net;const mt=G.net?G.f[G.net.me].team:0,won=G.wins[mt]>=2,tn=G.tnames,wt=won?mt:1-mt;let s=tn[wt]+' wins '+G.wins[wt]+'–'+G.wins[1-wt];
  if(G.mode==='ranked'){const d=won?25:-18;rating=Math.max(0,rating+d);localStorage.setItem('daRating',rating);cloudSave();s+=' · Rating '+(d>0?'+':'')+d+' → '+rating+' ('+tier(rating)+')';}
  {const base=G.mode==='pvp'||G.mode==='private'||G.mode==='practice'?0:G.net?(won?80:20):G.mode==='ranked'?(won?90:20):G.mode==='t2'?(won?70:20):(won?60:15),pay=Math.round(base*dm());if(pay){award(pay);s+=' · +'+pay+' coins'+(G.net?'':' ('+DIFFN[G.lv]+' ×'+dm()+')');}}
  $('rt').textContent=G.net?(won?'Victory':'Defeat'):(won||G.mode==='pvp'||G.mode==='private')?'Victory — '+tn[won?0:1]:'Defeat';$('rs').textContent=s;$('res').hidden=false;}
