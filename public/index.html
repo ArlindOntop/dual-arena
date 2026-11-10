@@ -73,7 +73,7 @@ input:focus,select:focus{outline:2px solid var(--p2);outline-offset:1px}
 <div class="row"><input id="sec" type="password" size="10" placeholder="Secret code" aria-label="Secret code"><button class="b" id="unl">Unlock</button><span id="secm" class="keys"></span></div>
 <div id="msg">Private matches are local: the same room code always gives the same arena size and health, so two people can agree on rules. Online play needs a server.</div>
 </div></div>
-<div class="ov" id="shop" hidden><div class="menu"><div class="brand"><h1>MARKET</h1><p id="shc"></p></div><div class="row" id="stabs"></div><div class="grid" id="sgrid"></div><div class="row"><button class="b" id="sback">← Back</button></div><div id="msg">Earn coins by winning matches (Player vs AI, Ranked, 2v2, Battle Royale, online). Coins are saved in this browser.</div></div></div>
+<div class="ov" id="shop" hidden><div class="menu"><div class="brand"><h1>MARKET</h1><p id="shc"></p></div><div class="row" id="stabs"></div><div class="grid" id="sgrid"></div><div class="row"><button class="b" id="sback">← Back</button></div><div id="msg">Earn coins by winning matches (Player vs AI, Ranked, 2v2, online) and by getting kills in Battle Royale (25 each). Harder AI pays more: Normal ×1.5, Hard ×2.5. Coins are saved in this browser.</div></div></div>
 <div class="ov" id="res" hidden><h2 id="rt"></h2><div id="rs"></div>
 <div class="row"><button class="b go" id="again">Rematch</button><button class="b" id="home">Menu</button></div></div></div>
 <div class="keys"><b>P1</b> WASD move · Shift sprint · Space jump · J light · K heavy · L block · U special · I dash · O ranged (hold for minigun) &nbsp; <b>P2</b> Arrows move · Right Shift sprint · Enter jump · , light · . heavy · / block · ; special · ' dash · [ ranged &nbsp; Esc = menu · M = ultimate voice on/off</div>
@@ -162,7 +162,7 @@ function start(mode){
 function nextRound(){G.round++;const n=G.ch.length,pos=n===2?[[-150,0],[150,0]]:n===4?[[-170,-50],[-170,50],[170,-50],[170,50]]:G.ch.map((_,i)=>[Math.cos(i/n*6.2832)*R*.78,Math.sin(i/n*6.2832)*R*.78]);
  G.f=G.ch.map((ch,i)=>{const q=mk(i,pos[i][0],'#fff',G.names[i]);q.y=pos[i][1];q.team=G.teams[i];q.ctl=G.ctl[i];q.ch=ch;q.wp=CH[ch].w;q.col=CH[ch].col;if(i===(G.net?G.net.me:0)&&cwc)q.col=cwc;q.mhp=q.hp=CH[ch].hp||HP;if(q.team===1)q.face=Math.PI;return q;});
  const seen={};for(const q of G.f){seen[q.ch]=(seen[q.ch]||0)+1;if(seen[q.ch]>1)q.col=lighten(q.col);}
- G.pj=[];G.zn=[];G.ts=null;G.timer=60;G.state='intro';G.st=1.4;G.dmg=0;G.sr=R;G.ft=0;
+ G.pj=[];G.zn=[];G.ts=null;G.timer=60;G.state='intro';G.st=1.4;G.dmg=0;G.sr=R;G.ft=0;G.kills=0;
  if(G.mode==='br'){G.f.forEach((q,i)=>{if(i>0){q.ko=true;q.hid=true;}});G.state='lobby';G.st=15;}}
 function newCode(){return Math.random().toString(36).slice(2,8).toUpperCase();}
 function toMenu(){leaveNet();G=null;$('again').hidden=false;$('menu').hidden=false;$('res').hidden=true;refresh();}
@@ -191,7 +191,9 @@ function strike(f,o,a){
  if(f.counter>0){dmg*=1.5;f.counter=0;pop(f.x,f.y-80,'COUNTER','#ff6b6b');}
  if(G.net){pushEv({k:'h',t:o.i,d:dmg,a:f.act,c:f.chain,x:Math.round(f.x),y:Math.round(f.y)});return;}
  resolve(f,o,a,dmg);}
-function resolve(f,o,a,dmg){const dx=o.x-f.x,dy=o.y-f.y,d=Math.hypot(dx,dy)||1,nx=dx/d,ny=dy/d;
+const KILL_COINS=25,DIFFM=[1,1.5,2.5],DIFFN=['Easy','Normal','Hard'];
+const dm=()=>G.net?1:(DIFFM[G.lv]||1);
+function resolve(f,o,a,dmg){o.lh=f.i;const dx=o.x-f.x,dy=o.y-f.y,d=Math.hypot(dx,dy)||1,nx=dx/d,ny=dy/d;
  if(o.block&&(!a.aoe||a.blk)){
   if(o.bt<.15&&!a.hv&&!a.proj&&!a.aoe){f.stun=.8;f.act=null;f.kx=-nx*200;f.ky=-ny*200;o.counter=1.6;if(G.net)pushEv({k:'p',t:f.i});o.sp=Math.min(100,o.sp+15);o.block=false;pop(o.x,o.y-80,'PARRY!','#7fd8ff');cam.sh=8;return;}
   if(a.hv||o.st<dmg*1.5){o.stun=.55;o.block=false;o.st=Math.max(0,o.st-20);dmg*=.5;pop(o.x,o.y-80,'GUARD BREAK','#ffd166');}
@@ -305,7 +307,7 @@ function update(dt){
  if(G.state==='fight'){for(const z of G.zn){const ow=G.f[z.own];if(!ow||G.ts&&ow.team!==G.ts.team)continue;
   if(z.real){z.life-=dt;z.x+=z.vx*dt;z.y+=z.vy*dt;if(Math.hypot(z.x,z.y)>R-z.r*.3){z.vx=0;z.vy=0;}}
   for(const f of G.f){if(G.net&&f!==G.f[G.net.me])continue;if(f.team===ow.team||f.ko||f.inv>0)continue;
-   if(Math.hypot(f.x-z.x,f.y-z.y)<=z.r){f.zt+=dt;let n=0;while(f.zt>=.05){f.zt-=.05;n++;}if(n){f.hp-=2*n;if(f.hp<=0){f.hp=0;f.ko=true;}}}else f.zt=0;}}
+   if(Math.hypot(f.x-z.x,f.y-z.y)<=z.r){f.zt+=dt;let n=0;while(f.zt>=.05){f.zt-=.05;n++;}if(n){f.lh=ow.i;f.hp-=2*n;if(f.hp<=0){f.hp=0;f.ko=true;}}}else f.zt=0;}}
   G.zn=G.zn.filter(z=>z.life>0||!z.real&&false);}
  if(G.state==='fight'||G.state==='end'){for(const p of G.pj){const ow=G.f[p.own];if(G.ts&&ow.team!==G.ts.team&&!SH[p.k].scan)continue;p.life-=dt;p.x+=p.vx*dt;p.y+=p.vy*dt;
   if(p.real&&G.state==='fight'&&p.life>0&&!SH[p.k].scan){for(const o of G.f){if(o.team===ow.team||o.ko||o.z>=70||o.inv>0)continue;if(Math.hypot(o.x-p.x,o.y-p.y)<24){shotHit(ow,o,SH[p.k],p.k);p.life=0;break;}}}
@@ -317,13 +319,13 @@ function update(dt){
  cam.sh*=.85;PR.clear();}
 function brTick(dt){G.ft+=dt;const me=G.f[0];G.sr=Math.max(220,R-Math.max(0,G.ft-20)*8.5);
  for(const f of G.f){if(f.ko)continue;if(Math.hypot(f.x,f.y)>G.sr){f.hp-=8*dt;if(f.hp<=0){f.hp=0;f.ko=true;}}}
- const al=G.f.filter(q=>!q.ko);for(const f of G.f)if(f.ko&&!f.pl)f.pl=al.length+1;
+ const al=G.f.filter(q=>!q.ko);for(const f of G.f)if(f.ko&&!f.pl){f.pl=al.length+1;if(f!==me&&f.lh===0){G.kills++;pop(f.x,f.y-90,'+'+Math.round(KILL_COINS*dm())+' coins','#ffd166');}}
  if(al.length<=1||me.ko){G.state='end';G.st=2.4;G.w=al[0]?al[0].i:0;G.ending=true;}}
 function finishBR(){G.state='over';$('again').hidden=false;const me=G.f[0],al=G.f.filter(q=>!q.ko),won=!me.ko&&al.length<=1,p=won?1:(me.pl||12);
- $('rt').textContent=won?'Victory Royale!':'Eliminated · #'+p+' of 12';$('rs').textContent=(won?'Last one standing. ':'You placed #'+p+' of 12. ')+'Survived '+Math.round(G.ft)+'s. +'+award(won?220:Math.max(20,12*(12-p)+20))+' coins';$('res').hidden=false;}
+ $('rt').textContent=won?'Victory Royale!':'Eliminated · #'+p+' of 12';$('rs').textContent=(won?'Last one standing. ':'You placed #'+p+' of 12. ')+'Survived '+Math.round(G.ft)+'s · '+G.kills+' kill'+(G.kills===1?'':'s')+' · +'+award(Math.round(G.kills*KILL_COINS*dm()))+' coins ('+DIFFN[G.lv]+' ×'+dm()+')';$('res').hidden=false;}
 function finish(){if(G.mode==='br')return finishBR();G.state='over';$('again').hidden=!!G.net;const mt=G.net?G.f[G.net.me].team:0,won=G.wins[mt]>=2,tn=G.tnames,wt=won?mt:1-mt;let s=tn[wt]+' wins '+G.wins[wt]+'–'+G.wins[1-wt];
  if(G.mode==='ranked'){const d=won?25:-18;rating=Math.max(0,rating+d);localStorage.setItem('daRating',rating);s+=' · Rating '+(d>0?'+':'')+d+' → '+rating+' ('+tier(rating)+')';}
- {const pay=G.mode==='pvp'||G.mode==='private'||G.mode==='practice'?0:G.net?(won?80:20):G.mode==='ranked'?(won?90:20):G.mode==='t2'?(won?70:20):(won?60:15);if(pay){award(pay);s+=' · +'+pay+' coins';}}
+ {const base=G.mode==='pvp'||G.mode==='private'||G.mode==='practice'?0:G.net?(won?80:20):G.mode==='ranked'?(won?90:20):G.mode==='t2'?(won?70:20):(won?60:15),pay=Math.round(base*dm());if(pay){award(pay);s+=' · +'+pay+' coins'+(G.net?'':' ('+DIFFN[G.lv]+' ×'+dm()+')');}}
  $('rt').textContent=G.net?(won?'Victory':'Defeat'):(won||G.mode==='pvp'||G.mode==='private')?'Victory — '+tn[won?0:1]:'Defeat';$('rs').textContent=s;$('res').hidden=false;}
 $('again').onclick=()=>start(G.mode);$('home').onclick=toMenu;
 $('mk').onclick=()=>{$('code').value=newCode();};
@@ -454,7 +456,8 @@ function hudBR(){const me=G.f[0],c=CH[me.ch],al=G.f.filter(q=>!q.ko&&!q.hid).len
  g.textAlign='center';g.font='bold 22px system-ui';
  if(G.state==='lobby'){g.fillText('Waiting for players… 1 / 12',W/2,40);g.font='bold 40px system-ui';g.fillText(Math.ceil(G.st),W/2,84);g.font='14px system-ui';g.fillText('Bots fill the empty spots when the timer hits 0',W/2,106);}
  else{g.fillText('Alive '+al+' / 12',W/2,36);g.font='13px system-ui';const to=Math.max(0,20-G.ft);g.fillText(to>0?'Storm starts in '+Math.ceil(to)+'s':'Storm closing',W/2,56);}
- if(me.combo>1){g.fillStyle='#ffd166';g.font='bold 20px system-ui';g.textAlign='left';g.fillText(me.combo+' hit combo',32,112);}
+ g.fillStyle='#ffd166';g.font='bold 13px system-ui';g.textAlign='left';g.fillText('Kills '+G.kills+' · +'+Math.round(G.kills*KILL_COINS*dm())+' coins',32,108);
+ if(me.combo>1){g.fillStyle='#fff';g.font='bold 20px system-ui';g.textAlign='left';g.fillText(me.combo+' hit combo',32,134);}
  const mx=W-90,my=H-90,mr=70,k=mr/R;g.fillStyle='rgba(10,14,24,.7)';g.beginPath();g.arc(mx,my,mr,0,7);g.fill();g.strokeStyle='#4a5a80';g.stroke();
  g.strokeStyle='#ff4d8d';g.beginPath();g.arc(mx,my,(G.sr||R)*k,0,7);g.stroke();
  for(const f of G.f){if(f.ko||f.hid)continue;g.fillStyle=f===me?'#fff':'#ff6b6b';g.fillRect(mx+f.x*k-2,my+f.y*k-2,4,4);}}
