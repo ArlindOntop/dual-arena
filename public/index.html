@@ -51,6 +51,11 @@ input:focus,select:focus{outline:2px solid var(--p2);outline-offset:1px}
 <div class="setup"><label>You <select id="wp" aria-label="Your character"></select></label><label>Player 2 <select id="wp2" aria-label="Player 2 character"></select></label><label>Colorway <select id="cw" aria-label="Colorway"></select></label><label>Arena <select id="ar" aria-label="Arena"></select></label><label>AI level <select id="lv"><option value="0">Easy</option><option value="1" selected>Normal</option><option value="2">Hard</option></select></label></div>
 <div id="chd" class="keys"></div>
 <div class="row"><button class="b cool" id="shopb">🛒 Market · <span id="coins">0</span> 🪙</button></div>
+<h3>Account</h3>
+<div id="accOff" class="row"><button class="b" id="accNew">Create account</button><span class="keys">or</span><input id="accIn" maxlength="14" size="12" placeholder="Enter your code" aria-label="Account code"><button class="b" id="accLoad">Load</button></div>
+<div id="accOn" class="row" hidden><span class="keys">Your code: <b id="accCode" style="letter-spacing:2px;color:var(--p2)"></b></span><button class="b" id="accCopy">Copy</button><button class="b" id="accOut">Sign out</button></div>
+<div id="accMsg" class="keys" style="min-height:14px;margin:0"></div>
+<details class="keys"><summary>Backup code (works without the server)</summary><div class="row" style="margin-top:6px"><button class="b" id="bkMake">Copy backup code</button><input id="bkIn" size="14" placeholder="Paste backup code" aria-label="Backup code"><button class="b" id="bkLoad">Restore</button></div><input id="bkOut" readonly hidden style="width:100%;margin-top:6px"></details>
 <h3>Quick play</h3>
 <div class="grid">
 <button class="b hot" data-m="ai">⚔ Player vs AI<small>Pick a difficulty</small></button>
@@ -115,7 +120,7 @@ const CWS={def:{n:'Default'},neon:{n:'Neon Pulse',col:'#39ff88'},ember:{n:'Ember
 const ARS={classic:{n:'Classic',c0:'#33406a',c1:'#222c4d',c2:'#171e38',rim:'#7f9cff',line:'#3a4a7c',sh:'#0b1020'},neon:{n:'Neon Grid',c0:'#1d2e3a',c1:'#102029',c2:'#09131a',rim:'#35e0c8',line:'#1e6f66',sh:'#050b10'},sunset:{n:'Sunset Dojo',c0:'#6a3a58',c1:'#472743',c2:'#2a1530',rim:'#ff9a5c',line:'#7a4666',sh:'#150a1a'},toxic:{n:'Toxic Pit',c0:'#2f4a2c',c1:'#1f3320',c2:'#12200f',rim:'#9dff4d',line:'#3f6a3a',sh:'#08120a'},ice:{n:'Ice Rink',c0:'#6b8fb0',c1:'#4a6c8e',c2:'#2f4764',rim:'#d8f2ff',line:'#86a9c9',sh:'#0b1826'}};
 let TH=ARS.classic,cwc=null;
 let INV={coins:200,ch:[],cw:['def'],ar:['classic']};try{const j=JSON.parse(localStorage.getItem('daInv')||'null');if(j&&typeof j.coins==='number')INV={coins:Math.max(0,j.coins|0),ch:Array.isArray(j.ch)?j.ch:[],cw:Array.isArray(j.cw)?j.cw:['def'],ar:Array.isArray(j.ar)?j.ar:['classic']};}catch(e){}
-const saveInv=()=>{try{localStorage.setItem('daInv',JSON.stringify(INV));}catch(e){}};
+const saveInv=()=>{try{localStorage.setItem('daInv',JSON.stringify(INV));}catch(e){}cloudSave();};
 const owns=k=>FREE_CH.includes(k)||INV.ch.includes(k)||(CH[k]&&CH[k].secret);
 function award(n){INV.coins+=n;saveInv();refreshCoins();return n;}
 function refreshCoins(){const e=document.getElementById('coins');if(e)e.textContent=INV.coins;const h=document.getElementById('shc');if(h)h.textContent='You have '+INV.coins+' coins';}
@@ -131,10 +136,38 @@ function renderShop(tab){tab=tab||'ch';refreshCoins();$('stabs').innerHTML=[['ch
  for(const b of $('sgrid').querySelectorAll('[data-buy]'))b.onclick=()=>{const[t,k]=b.dataset.buy.split(':'),p=SHOP[t][k];if(INV.coins<p||!p)return;INV.coins-=p;(t==='ch'?INV.ch:t==='cw'?INV.cw:INV.ar).push(k);saveInv();buildOpts();showDesc();renderShop(t);};}
 $('shopb').onclick=()=>{$('menu').hidden=true;$('shop').hidden=false;renderShop('ch');};
 $('sback').onclick=()=>{$('shop').hidden=true;$('menu').hidden=false;};
+// ---- mini account: code + auto-save, and an offline backup code ----
+const ACC={code:(()=>{try{return localStorage.getItem('daAcc')||'';}catch(e){return '';}})()};
+const snap=()=>({coins:INV.coins,ch:INV.ch,cw:INV.cw,ar:INV.ar,r:rating,u:UNL?1:0,sel:{wp:$('wp').value,cw:$('cw').value,ar:$('ar').value}});
+const accMsg=(t,bad)=>{const e=$('accMsg');e.textContent=t;e.style.color=bad?'#ff8a8a':'#8fe3b0';};
+function showAcc(){const on=!!ACC.code;$('accOff').hidden=on;$('accOn').hidden=!on;$('accCode').textContent=ACC.code;}
+let saveT=null;
+function postSave(){return fetch('/api/save',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code:ACC.code,data:snap()})}).then(r=>r.ok?1:Promise.reject());}
+function cloudSave(){if(!ACC.code)return;clearTimeout(saveT);saveT=setTimeout(()=>{postSave().then(()=>accMsg('Saved ✓')).catch(()=>accMsg('Couldn’t reach the server. Progress is still kept on this device.',1));},800);}
+function applyData(d){const ids=a=>Array.isArray(a)?a.filter(x=>typeof x==='string').slice(0,40):[];
+ INV.coins=Math.max(0,d.coins|0);INV.ch=ids(d.ch);INV.cw=ids(d.cw).length?ids(d.cw):['def'];INV.ar=ids(d.ar).length?ids(d.ar):['classic'];
+ rating=Math.max(0,d.r|0)||1000;try{localStorage.setItem('daRating',rating);}catch(e){}
+ if(d.u){UNL=true;try{localStorage.setItem('daU','1');}catch(e){}}
+ try{localStorage.setItem('daInv',JSON.stringify(INV));}catch(e){}
+ const sel=d.sel||{};if(sel.wp)$('wp').value=sel.wp;if(sel.cw)$('cw').value=sel.cw;if(sel.ar)$('ar').value=sel.ar;
+ buildOpts();for(const k of['wp','cw','ar'])if(sel[k]&&[...$(k).options].some(o=>o.value===sel[k]))$(k).value=sel[k];
+ showDesc();refreshCoins();try{$('rk').textContent=tier(rating)+' · '+rating;}catch(e){}}
+function newAccCode(){const A='ABCDEFGHJKLMNPQRSTUVWXYZ23456789',b=crypto.getRandomValues(new Uint8Array(10));return[...b].map(x=>A[x%A.length]).join('');}
+$('accNew').onclick=()=>{const prev=ACC.code;ACC.code=newAccCode();postSave().then(()=>{try{localStorage.setItem('daAcc',ACC.code);}catch(e){}showAcc();accMsg('Account created. Write this code down — it is your password.');}).catch(()=>{ACC.code=prev;accMsg('Accounts need the live website (the server could not be reached).',1);});};
+$('accLoad').onclick=()=>{const c=$('accIn').value.trim().toUpperCase().replace(/[^A-Z0-9]/g,'');if(c.length!==10){accMsg('Codes are 10 letters and numbers.',1);return;}
+ fetch('/api/load?code='+c).then(r=>(r.status===404||r.status===400)?Promise.reject('nf'):r.ok?r.json():Promise.reject('err')).then(j=>{ACC.code=c;try{localStorage.setItem('daAcc',c);}catch(e){}applyData(j.data);showAcc();$('accIn').value='';accMsg('Loaded. Your coins and unlocks are back.');}).catch(e=>accMsg(e==='nf'?'No account found with that code.':'Couldn’t reach the server. Accounts need the live website.',1));};
+$('accOut').onclick=()=>{ACC.code='';try{localStorage.removeItem('daAcc');}catch(e){}showAcc();accMsg('Signed out. Progress on this device stays as it is.');};
+const copyTxt=(t,ok)=>{(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>accMsg(ok),()=>{$('bkOut').value=t;$('bkOut').hidden=false;accMsg('Copy it from the box below.');});};
+$('accCopy').onclick=()=>copyTxt(ACC.code,'Code copied.');
+$('bkMake').onclick=()=>{let t;try{t='DA1.'+btoa(unescape(encodeURIComponent(JSON.stringify(snap()))));}catch(e){return;}copyTxt(t,'Backup code copied. Keep it somewhere safe.');};
+$('bkLoad').onclick=()=>{const t=$('bkIn').value.trim();try{if(!t.startsWith('DA1.'))throw 0;const d=JSON.parse(decodeURIComponent(escape(atob(t.slice(4)))));if(!d||typeof d.coins!=='number')throw 0;applyData(d);saveInv();$('bkIn').value='';accMsg('Backup restored.');}catch(e){accMsg('That backup code isn’t valid.',1);}};
+for(const k of['wp','cw','ar'])$(k).addEventListener('change',cloudSave);
+showAcc();
+if(ACC.code)fetch('/api/load?code='+ACC.code).then(r=>r.ok?r.json():Promise.reject()).then(j=>{applyData(j.data);accMsg('Signed in.');}).catch(()=>{});
 const UH='5c59c518bca85856c733cef605d2e514f52a2a18b8a0cb2df060b37cd9a90760',UF=508222059;
 async function sha(t){try{const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t));return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('');}catch(e){return null;}}
 $('unl').onclick=async()=>{const v=$('sec').value.trim().toLowerCase(),hh=await sha(v);const ok=hh?hh===UH:hash(v)===UF;
- if(ok){UNL=true;try{localStorage.setItem('daU','1');}catch(e){}buildOpts();showDesc();$('secm').textContent='Unlocked. A new character is in the lists.';}else $('secm').textContent='That code isn’t right.';$('sec').value='';};
+ if(ok){UNL=true;try{localStorage.setItem('daU','1');}catch(e){}cloudSave();buildOpts();showDesc();$('secm').textContent='Unlocked. A new character is in the lists.';}else $('secm').textContent='That code isn’t right.';$('sec').value='';};
 const showDesc=()=>{$('chd').textContent=CH[$('wp').value].n+': '+CH[$('wp').value].desc+'  |  '+CH[$('wp2').value].n+': '+CH[$('wp2').value].desc;};
 $('wp').onchange=$('wp2').onchange=showDesc;showDesc();
 let G=null,cam={x:0,y:0,z:1,sh:0},fx=[],txt=[],R=400,HP=250,rating=+localStorage.getItem('daRating')||1000;
@@ -324,7 +357,7 @@ function brTick(dt){G.ft+=dt;const me=G.f[0];G.sr=Math.max(220,R-Math.max(0,G.ft
 function finishBR(){G.state='over';$('again').hidden=false;const me=G.f[0],al=G.f.filter(q=>!q.ko),won=!me.ko&&al.length<=1,p=won?1:(me.pl||12);
  $('rt').textContent=won?'Victory Royale!':'Eliminated · #'+p+' of 12';$('rs').textContent=(won?'Last one standing. ':'You placed #'+p+' of 12. ')+'Survived '+Math.round(G.ft)+'s · '+G.kills+' kill'+(G.kills===1?'':'s')+' · +'+award(Math.round(G.kills*KILL_COINS*dm()))+' coins ('+DIFFN[G.lv]+' ×'+dm()+')';$('res').hidden=false;}
 function finish(){if(G.mode==='br')return finishBR();G.state='over';$('again').hidden=!!G.net;const mt=G.net?G.f[G.net.me].team:0,won=G.wins[mt]>=2,tn=G.tnames,wt=won?mt:1-mt;let s=tn[wt]+' wins '+G.wins[wt]+'–'+G.wins[1-wt];
- if(G.mode==='ranked'){const d=won?25:-18;rating=Math.max(0,rating+d);localStorage.setItem('daRating',rating);s+=' · Rating '+(d>0?'+':'')+d+' → '+rating+' ('+tier(rating)+')';}
+ if(G.mode==='ranked'){const d=won?25:-18;rating=Math.max(0,rating+d);localStorage.setItem('daRating',rating);cloudSave();s+=' · Rating '+(d>0?'+':'')+d+' → '+rating+' ('+tier(rating)+')';}
  {const base=G.mode==='pvp'||G.mode==='private'||G.mode==='practice'?0:G.net?(won?80:20):G.mode==='ranked'?(won?90:20):G.mode==='t2'?(won?70:20):(won?60:15),pay=Math.round(base*dm());if(pay){award(pay);s+=' · +'+pay+' coins'+(G.net?'':' ('+DIFFN[G.lv]+' ×'+dm()+')');}}
  $('rt').textContent=G.net?(won?'Victory':'Defeat'):(won||G.mode==='pvp'||G.mode==='private')?'Victory — '+tn[won?0:1]:'Defeat';$('rs').textContent=s;$('res').hidden=false;}
 $('again').onclick=()=>start(G.mode);$('home').onclick=toMenu;

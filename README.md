@@ -17,3 +17,7 @@ Railway, Fly.io and any VPS also work: run `node server.js` and set the `PORT` e
 - Online room: type a code, then send the invite link shown (`https://your-site/#room=CODE`) in an email. Opening it joins that room.
 
 Note: the server only relays state between the two players (it does not judge hits), so a determined cheater could modify their own client.
+
+## Accounts
+
+Players can create a 10-character account code in the menu; progress (coins, purchases, rating, unlocks) auto-saves to the server as small JSON in `data/saves.json` (override the folder with `DATA_DIR`). On Render's free plan the disk is wiped on every deploy or restart, so saves can disappear. For permanent saves, attach a Render Disk and set `DATA_DIR` to its mount path. Players can also keep a "backup code" that works without the server.

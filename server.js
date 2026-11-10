@@ -5,10 +5,30 @@ const MIME={'.html':'text/html; charset=utf-8','.js':'text/javascript','.css':'t
 const VERSION=process.env.RENDER_GIT_COMMIT||process.env.GIT_COMMIT||String(Date.now());
 const rooms=new Map(),clients=new Set();
 
+// ---- mini accounts: a random code is the key; progress is stored as small JSON ----
+const DATA=process.env.DATA_DIR||path.join(__dirname,'data'),SAVEF=path.join(DATA,'saves.json');
+let saves={};try{saves=JSON.parse(fs.readFileSync(SAVEF,'utf8'));}catch{}
+const persist=()=>{try{fs.mkdirSync(DATA,{recursive:true});fs.writeFileSync(SAVEF+'.tmp',JSON.stringify(saves));fs.renameSync(SAVEF+'.tmp',SAVEF);}catch(e){console.log('save failed',e.message);}};
+const CODE=/^[A-HJ-NP-Z2-9]{10}$/,ID=/^[a-z0-9_]{1,24}$/,rl=new Map();
+const limited=ip=>{const n=Date.now(),a=(rl.get(ip)||[]).filter(t=>n-t<60000);a.push(n);rl.set(ip,a);return a.length>40;};
+const ids=a=>Array.isArray(a)?[...new Set(a.filter(x=>typeof x==='string'&&ID.test(x)))].slice(0,40):[];
+function clean(d){if(!d||typeof d!=='object')return null;const n=(v,max)=>Number.isFinite(v)?Math.max(0,Math.min(max,Math.floor(v))):0,sel=d.sel&&typeof d.sel==='object'?d.sel:{};
+ return{coins:n(d.coins,1e7),ch:ids(d.ch),cw:ids(d.cw),ar:ids(d.ar),r:n(d.r,5000),u:d.u?1:0,sel:{wp:ID.test(sel.wp)?sel.wp:'',cw:ID.test(sel.cw)?sel.cw:'',ar:ID.test(sel.ar)?sel.ar:''}};}
+function api(req,res,u,q){
+ const out=(c,o)=>{res.writeHead(c,{'Content-Type':'application/json','Cache-Control':'no-store'});res.end(JSON.stringify(o));};
+ const ip=(req.headers['x-forwarded-for']||req.socket.remoteAddress||'').split(',')[0].trim();
+ if(limited(ip))return out(429,{error:'slow down'});
+ if(u==='/api/load'&&req.method==='GET'){const c=(q.get('code')||'').toUpperCase();if(!CODE.test(c))return out(400,{error:'bad code'});return saves[c]?out(200,{data:saves[c]}):out(404,{error:'not found'});}
+ if(u==='/api/save'&&req.method==='POST'){let b='';req.on('data',d=>{b+=d;if(b.length>4096)req.destroy();});req.on('end',()=>{let j;try{j=JSON.parse(b);}catch{return out(400,{error:'bad json'});}
+  const c=String(j.code||'').toUpperCase(),d=clean(j.data);if(!CODE.test(c)||!d)return out(400,{error:'bad data'});
+  if(!saves[c]&&Object.keys(saves).length>=20000)return out(507,{error:'full'});saves[c]=d;persist();out(200,{ok:1});});return;}
+ out(404,{error:'nope'});}
+
 const srv=http.createServer((req,res)=>{
  let u=decodeURIComponent(req.url.split('?')[0]);
  if(u==='/healthz'){res.end('ok');return;}
  if(u==='/version'){res.writeHead(200,{'Content-Type':'application/json','Cache-Control':'no-store'});res.end(JSON.stringify({v:VERSION}));return;}
+ if(u.startsWith('/api/'))return api(req,res,u,new URL(req.url,'http://x').searchParams);
  if(u==='/')u='/index.html';
  const f=path.join(PUB,u);
  if(f!==PUB&&!f.startsWith(PUB+path.sep)){res.writeHead(403);return res.end();}
