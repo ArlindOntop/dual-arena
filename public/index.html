@@ -19,6 +19,19 @@ canvas{width:100%;display:block;border-radius:14px;border:1px solid var(--line);
 .brand h1 span{background:var(--cool);-webkit-background-clip:text;background-clip:text;color:transparent;margin-left:8px}
 .brand p{margin:2px 0 0;color:var(--mute);font-weight:500;font-size:12px}
 h2{margin:0;font-size:30px}
+.chcard{display:grid;grid-template-columns:46px 1fr 46px;gap:8px;align-items:center;width:100%}
+.arrow{width:46px;height:46px;border-radius:50%;border:1px solid var(--line);background:var(--panel2);color:var(--ink);font-size:26px;line-height:1;cursor:pointer}
+.arrow:hover{border-color:var(--p2);background:var(--panel)}
+#chBody{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px 14px;text-align:left;min-height:300px}
+.cc-top{display:flex;gap:10px;align-items:center}.cc-top i{width:44px;height:44px;border-radius:12px;flex:none;box-shadow:0 0 22px -4px currentColor}
+.cc-top h2{font-size:22px}.cc-top small{color:var(--mute);font-weight:500;font-size:11px}
+.cc-d{color:var(--mute);font-weight:500;font-size:12px;margin:8px 0 6px;min-height:34px}
+.st{display:grid;grid-template-columns:78px 1fr 118px;gap:8px;align-items:center;font-size:12px;margin:4px 0}
+.st u{display:block;height:8px;border-radius:6px;background:#0c1222;border:1px solid var(--line);text-decoration:none;overflow:hidden}
+.st u s{display:block;height:100%;border-radius:6px;background:var(--hot);text-decoration:none}
+.st span{color:var(--mute)}.st em{font-style:normal;text-align:right;font-weight:700}
+.mv{margin-top:8px;border-top:1px solid var(--line);padding-top:6px;font-size:12px;color:var(--mute);font-weight:500}.mv b{color:var(--ink)}
+.dots{display:flex;gap:6px;justify-content:center;flex-wrap:wrap}.dots i{width:9px;height:9px;border-radius:50%;background:#2a3556;cursor:pointer}.dots i.on{background:var(--p2)}
 .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:5px;text-align:left}
 .card i{display:block;height:26px;border-radius:7px;box-shadow:0 0 18px -4px currentColor}
 .card b{font-size:14px}.card small{color:var(--mute);font-weight:500;font-size:11px;min-height:44px}
@@ -43,11 +56,12 @@ input:focus,select:focus{outline:2px solid var(--p2);outline-offset:1px}
 .keys b{color:var(--ink)}
 #chd{max-width:640px;margin:0 auto}
 #msg{color:var(--mute);font-weight:500;font-size:11px;max-width:520px;margin:2px auto 0}
-@media (max-width:760px),(max-height:620px){#menu,#shop{position:fixed;inset:0;border-radius:0;z-index:20;padding:12px 12px 24px}}
+@media (max-width:760px),(max-height:620px){#menu,#shop,#chs{position:fixed;inset:0;border-radius:0;z-index:20;padding:12px 12px 24px}}
 </style></head><body><div class="wrap">
 <div class="stage"><canvas id="cv" width="960" height="540"></canvas>
 <div class="ov" id="menu"><div class="menu">
 <div class="brand"><h1>DUEL<span>ARENA</span></h1><p>Pick a mode · scroll for more</p></div>
+<div class="row"><button class="b cool" id="chOpen">🧑‍🎤 Choose characters <small id="chCur"></small></button></div>
 <div class="setup"><label>You <select id="wp" aria-label="Your character"></select></label><label>Player 2 <select id="wp2" aria-label="Player 2 character"></select></label><label>Colorway <select id="cw" aria-label="Colorway"></select></label><label>Arena <select id="ar" aria-label="Arena"></select></label><label>AI level <select id="lv"><option value="0">Easy</option><option value="1" selected>Normal</option><option value="2">Hard</option></select></label></div>
 <div id="chd" class="keys"></div>
 <div class="row"><button class="b cool" id="shopb">🛒 Market · <span id="coins">0</span> 🪙</button></div>
@@ -79,9 +93,16 @@ input:focus,select:focus{outline:2px solid var(--p2);outline-offset:1px}
 <div id="msg">Private matches are local: the same room code always gives the same arena size and health, so two people can agree on rules. Online play needs a server.</div>
 </div></div>
 <div class="ov" id="shop" hidden><div class="menu"><div class="brand"><h1>MARKET</h1><p id="shc"></p></div><div class="row" id="stabs"></div><div class="grid" id="sgrid"></div><div class="row"><button class="b" id="sback">← Back</button></div><div id="msg">Earn coins by winning matches (Player vs AI, Ranked, 2v2, online) and by getting kills in Battle Royale (25 each). Harder AI pays more: Normal ×1.5, Hard ×2.5. Coins are saved in this browser.</div></div></div>
+<div class="ov" id="chs" hidden><div class="menu">
+<div class="brand"><h1>CHARACTERS</h1><p>Use the arrows (or ← →) to browse</p></div>
+<div class="row"><button class="b hot" id="pl1">Player 1</button><button class="b" id="pl2">Player 2</button></div>
+<div class="chcard"><button class="arrow" id="chPrev" aria-label="Previous character">‹</button><div id="chBody"></div><button class="arrow" id="chNext" aria-label="Next character">›</button></div>
+<div class="dots" id="chDots"></div>
+<div class="row"><button class="b go" id="chPick">Select</button><button class="b" id="chBack">← Back</button></div>
+</div></div>
 <div class="ov" id="res" hidden><h2 id="rt"></h2><div id="rs"></div>
 <div class="row"><button class="b go" id="again">Rematch</button><button class="b" id="home">Menu</button></div></div></div>
-<div class="keys"><b>P1</b> WASD move · Shift sprint · Space jump · J light · K heavy · L block · U special · I dash · O ranged (hold for minigun) &nbsp; <b>P2</b> Arrows move · Right Shift sprint · Enter jump · , light · . heavy · / block · ; special · ' dash · [ ranged &nbsp; Esc = menu · M = ultimate voice on/off</div>
+<div class="keys" id="kb"><b>P1</b> WASD move · Shift sprint · Space jump · J light · K heavy · L block · U special · I dash · O ranged (hold for minigun) &nbsp; <b>P2</b> Arrows move · Right Shift sprint · Enter jump · , light · . heavy · / block · ; special · ' dash · [ ranged &nbsp; Esc = menu · M = ultimate voice on/off</div>
 </div>
 <script>
 const W=960,H=540,cv=document.getElementById('cv'),g=cv.getContext('2d'),$=id=>document.getElementById(id);
@@ -169,8 +190,45 @@ const UH='5c59c518bca85856c733cef605d2e514f52a2a18b8a0cb2df060b37cd9a90760',UF=5
 async function sha(t){try{const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t));return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('');}catch(e){return null;}}
 $('unl').onclick=async()=>{const v=$('sec').value.trim().toLowerCase(),hh=await sha(v);const ok=hh?hh===UH:hash(v)===UF;
  if(ok){UNL=true;try{localStorage.setItem('daU','1');}catch(e){}cloudSave();buildOpts();showDesc();$('secm').textContent='Unlocked. A new character is in the lists.';}else $('secm').textContent='That code isn’t right.';$('sec').value='';};
-const showDesc=()=>{$('chd').textContent=CH[$('wp').value].n+': '+CH[$('wp').value].desc+'  |  '+CH[$('wp2').value].n+': '+CH[$('wp2').value].desc;};
+const showDesc=()=>{try{updateKeys($('wp').value,$('wp2').value);$('chCur').textContent='· You: '+CH[$('wp').value].n+' · P2: '+CH[$('wp2').value].n;}catch(e){}$('chd').textContent=CH[$('wp').value].n+': '+CH[$('wp').value].desc+'  |  '+CH[$('wp2').value].n+': '+CH[$('wp2').value].desc;};
+const UN={dan:'DECOY PROTOCOL',bez:'RADIO BLAST',tob:'THUNDER STRIKE',b:'INK STORM',brad:'ROLL THE DICE',scerra:'METEOR DROP',god:'TIME STOP',wil:'LEAD TORNADO',pulv:'THUNDER SPHERE',prof:'POP QUIZ!'};
+const OL={hack:'hack orb (reverses controls)',pistol:'pistol',zap:'zap arc',glob:'ink glob (slows)',shut:'laptop slam (stuns 1s)',tele:'teleport blast',pstun:'hold 2s: stun blast',slip:'detention slip (slows)',mini:'hold: minigun'};
+const ULX={dec:'No damage. Leaves a decoy and blinks behind you.',dice:'Rolls 3 dice, multiplied: up to 100.',orb:'Lightning orb: 2 damage every 0.05s (40/s) inside it.',tstop:'Time stop for 5s. Allies keep moving.',slam:'Jump and land: 120, 65% hit chance (halved if blocked).'};
+function updateKeys(a,b){const u=k=>'<i>'+(UN[k]||'ultimate')+'</i>',o=k=>'<i>'+(CH[k].s2?OL[CH[k].s2]:'none')+'</i>';
+ let h='<b>P1</b> WASD move · Shift sprint · Space jump · J light · K heavy · L block · U '+u(a)+' · I dash · O '+o(a);
+ if(b)h+=' &nbsp; <b>P2</b> Arrows move · Right Shift sprint · Enter jump · , light · . heavy · / block · ; '+u(b)+' · \' dash · [ '+o(b);
+ h+=' &nbsp; Esc = menu · M = voice on/off';$('kb').innerHTML=h;}
 $('wp').onchange=$('wp2').onchange=showDesc;showDesc();
+// ---- character browser ----
+let chFor='wp',chIdx=0;const chList=()=>Object.keys(CH).filter(k=>!CH[k].secret||UNL);
+function chStat(l,v,max,txt){return '<div class="st"><span>'+l+'</span><u><s style="width:'+Math.max(2,Math.min(100,v/max*100))+'%"></s></u><em>'+txt+'</em></div>';}
+function renderChars(){const L=chList();chIdx=(chIdx+L.length)%L.length;const k=L[chIdx],c=CH[k],lt=getA(k,'lt'),hv=getA(k,'hv'),sc=getA(k,'sc'),sh=c.s2?SH[c.s2]:null,own=owns(k),cur=$(chFor).value===k;
+ $('pl1').className='b'+(chFor==='wp'?' hot':'');$('pl2').className='b'+(chFor==='wp2'?' hot':'');
+ const ult=ULX[c.sp]||(sc.d+' damage'+(sc.aoe?' to everyone in range':'')+(sc.stun>=.8?', stuns '+sc.stun+'s':'')+'.');
+ const ud=sc.d||(c.sp==='dice'?100:c.sp==='orb'?40:0),sd=sh?(c.s2==='mini'?5:sh.d):0,shTxt=!sh?'none':c.s2==='mini'?'5 / bullet (≈36/s)':sh.d+(sh.stun?' · stun '+sh.stun+'s':'')+(sh.slow?' · slows':'')+(sh.rev?' · reverses controls':'');
+ $('chBody').innerHTML='<div class="cc-top"><i style="background:'+c.col+';color:'+c.col+'"></i><div><h2 style="color:'+c.col+'">'+c.n+'</h2><small>'+(own?(FREE_CH.includes(k)?'Free':c.secret?'Secret':'Owned'):'🔒 Locked · '+SHOP.ch[k]+' coins')+' · weapon: '+c.w+' · '+(chIdx+1)+' of '+L.length+'</small></div></div>'
+ +'<div class="cc-d">'+c.desc+'</div>'
+ +chStat('Health',c.hp||HP,500,(c.hp||HP)+' HP')
+ +chStat('Light hit',lt.d,40,Math.round(lt.d)+' dmg')
+ +chStat('Heavy hit',hv.d,100,Math.round(hv.d)+' dmg')
+ +chStat('Ultimate',ud,120,c.sp==='orb'?'40 / sec':c.sp==='dice'?'up to 100':ud?ud+' dmg':'utility')
+ +chStat('Ranged (O)',sd,25,shTxt)
+ +chStat('Speed',(c.spd-.8)/.4*100,100,(c.spd*100|0)+'%')
+ +chStat('Reach',lt.reach,70,Math.round(lt.reach))
+ +'<div class="mv"><b>U · '+(UN[k]||'Ultimate')+'</b> — '+ult+'<br><b>O · '+(c.s2?OL[c.s2]:'none')+'</b>'+(sh&&sh.cd?' — cooldown '+sh.cd+'s':'')+'</div>';
+ $('chDots').innerHTML=L.map((q,i)=>'<i class="'+(i===chIdx?'on':'')+'" data-i="'+i+'" title="'+CH[q].n+'"></i>').join('');
+ for(const d of $('chDots').children)d.onclick=()=>{chIdx=+d.dataset.i;renderChars();};
+ const pk=$('chPick');if(own){pk.textContent=cur?'Selected for '+(chFor==='wp'?'Player 1':'Player 2')+' ✓':'Select for '+(chFor==='wp'?'Player 1':'Player 2');pk.disabled=cur;pk.dataset.buy='';}
+ else{const p=SHOP.ch[k];pk.textContent='Buy · '+p+' 🪙';pk.disabled=INV.coins<p;pk.dataset.buy=k;}}
+function openChars(){chFor='wp';const L=chList();chIdx=Math.max(0,L.indexOf($('wp').value));$('menu').hidden=true;$('chs').hidden=false;renderChars();}
+$('chOpen').onclick=openChars;$('chBack').onclick=()=>{$('chs').hidden=true;$('menu').hidden=false;};
+$('chPrev').onclick=()=>{chIdx--;renderChars();};$('chNext').onclick=()=>{chIdx++;renderChars();};
+$('pl1').onclick=()=>{chFor='wp';chIdx=Math.max(0,chList().indexOf($('wp').value));renderChars();};
+$('pl2').onclick=()=>{chFor='wp2';chIdx=Math.max(0,chList().indexOf($('wp2').value));renderChars();};
+$('chPick').onclick=()=>{const L=chList(),k=L[(chIdx+L.length)%L.length];
+ if($('chPick').dataset.buy){const p=SHOP.ch[k];if(INV.coins<p)return;INV.coins-=p;INV.ch.push(k);saveInv();buildOpts();showDesc();renderChars();return;}
+ $(chFor).value=k;$(chFor).dispatchEvent(new Event('change'));showDesc();renderChars();};
+addEventListener('keydown',e=>{if($('chs').hidden)return;if(e.code==='ArrowLeft'){chIdx--;renderChars();e.preventDefault();}else if(e.code==='ArrowRight'){chIdx++;renderChars();e.preventDefault();}else if(e.code==='Escape'){$('chBack').onclick();}});
 let G=null,cam={x:0,y:0,z:1,sh:0},fx=[],txt=[],R=400,HP=250,rating=+localStorage.getItem('daRating')||1000;
 const tier=r=>r<1000?'Bronze':r<1200?'Silver':r<1400?'Gold':r<1600?'Platinum':'Diamond';
 function refresh(){$('rk').textContent=tier(rating)+' · '+rating;}refresh();
@@ -197,10 +255,10 @@ function nextRound(){G.round++;const n=G.ch.length,pos=n===2?[[-150,0],[150,0]]:
  G.f=G.ch.map((ch,i)=>{const q=mk(i,pos[i][0],'#fff',G.names[i]);q.y=pos[i][1];q.team=G.teams[i];q.ctl=G.ctl[i];q.ch=ch;q.wp=CH[ch].w;q.col=CH[ch].col;if(i===(G.net?G.net.me:0)&&cwc)q.col=cwc;q.mhp=q.hp=CH[ch].hp||HP;if(q.team===1)q.face=Math.PI;return q;});
  const seen={};for(const q of G.f){seen[q.ch]=(seen[q.ch]||0)+1;if(seen[q.ch]>1)q.col=lighten(q.col);}
  G.pj=[];G.zn=[];G.ts=null;G.timer=60;G.state='intro';G.st=1.4;G.dmg=0;G.sr=R;G.ft=0;G.kills=0;
+ try{const me=G.net?G.f[G.net.me]:G.f[0];updateKeys(me.ch,(G.mode==='pvp'||G.mode==='private')?G.f[1].ch:null);}catch(e){}
  if(G.mode==='br'){G.f.forEach((q,i)=>{if(i>0){q.ko=true;q.hid=true;}});G.state='lobby';G.st=15;}}
 function newCode(){return Math.random().toString(36).slice(2,8).toUpperCase();}
 function toMenu(){leaveNet();G=null;$('again').hidden=false;$('menu').hidden=false;$('res').hidden=true;refresh();}
-const UN={dan:'DECOY PROTOCOL',bez:'RADIO BLAST',tob:'THUNDER STRIKE',b:'INK STORM',brad:'ROLL THE DICE',scerra:'METEOR DROP',god:'TIME STOP',wil:'LEAD TORNADO',pulv:'THUNDER SPHERE',prof:'POP QUIZ!'};
 let CIN=[],VOICE=(()=>{try{return localStorage.getItem('daV')!=='0';}catch(e){return true;}})();
 addEventListener('keydown',e=>{if(e.code==='KeyM'&&e.target.tagName!=='INPUT'){VOICE=!VOICE;try{localStorage.setItem('daV',VOICE?'1':'0');}catch(_){}if(G)pop(G.f[0].x,G.f[0].y-120,'Voice '+(VOICE?'on':'off'),'#fff');}});
 function speak(t){try{const u=new SpeechSynthesisUtterance(t.replace(/[!]/g,''));u.rate=.85;u.pitch=.5;speechSynthesis.cancel();speechSynthesis.speak(u);}catch(e){}}
