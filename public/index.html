@@ -582,10 +582,10 @@ function leftGame(){if(!G||G.state==='over')return;G.state='over';$('again').hid
  box.innerHTML='<div style="font-size:30px">Updating the game</div><div style="color:#93a0ba;font-weight:500">A new version is being installed. This page reloads by itself in about a minute.</div>';
  document.body.appendChild(box);
  const get=()=>fetch('/version',{cache:'no-store'}).then(r=>r.ok?r.json():Promise.reject()).then(j=>j.v);
- function lock(){if(locked)return;locked=true;box.style.display='flex';if(typeof leaveNet==='function')try{leaveNet();}catch(e){}
+ function lock(){if(locked)return;locked=true;box.style.display='flex';setTimeout(()=>{box.style.display='none';locked=false;fails=0;v0=null;},150000);if(typeof leaveNet==='function')try{leaveNet();}catch(e){}
   const t=setInterval(()=>get().then(v=>{clearInterval(t);location.reload();}).catch(()=>{}),3000);}
- get().then(v=>v0=v).catch(()=>{});
- setInterval(()=>{if(locked)return;get().then(v=>{fails=0;if(v0===null)v0=v;else if(v!==v0)lock();}).catch(()=>{if(++fails>=2)lock();});},10000);
+ get().then(v=>{if(typeof v==='string')v0=v;}).catch(()=>{});
+ setInterval(()=>{if(locked)return;if(v0===null){get().then(v=>{if(typeof v==='string')v0=v;}).catch(()=>{});return;}get().then(v=>{fails=0;if(v!==v0)lock();}).catch(()=>{if(++fails>=3)lock();});},10000);
 })();
 let last=performance.now();
 function loop(n){const dt=Math.min(.033,(n-last)/1000);last=n;update(dt);draw();requestAnimationFrame(loop);}
