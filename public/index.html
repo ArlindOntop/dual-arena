@@ -248,7 +248,7 @@ function start(mode){
  else if(four){teams=[0,0,1,1];
   if(mode==='t2'){names=['You','Ally','Foe','Foe'];chs=[c1,rc(),rc(),rc()];ctl=['p1','ai','ai','ai'];tn=['Your team','Enemy team'];}
   else{const me=NET.me;names=[0,1,2,3].map(i=>i===me?'You':teams[i]===teams[me]?'Ally':'Foe');chs=['dan','dan','dan','dan'];chs[me]=c1;ctl=[0,1,2,3].map(i=>i===me?'p1':'net');tn=[0,1].map(t=>t===teams[me]?'Your team':'Their team');}}
- else{teams=[0,1];if(mode!=='pvp'&&mode!=='private')c2=mode==='practice'?'dan':rc();chs=[c1,c2];
+ else{teams=[0,1];if(mode!=='pvp'&&mode!=='private'){if(mode==='practice')c2='dan';else{const pool=ck.filter(k=>k!==c1);c2=pool[Math.floor(Math.random()*pool.length)];}if(mode==='ai'||mode==='ranked')names=['You','CPU · '+CH[c2].n];}chs=[c1,c2];
   if(mode==='online'){names=['Rival','Rival'];names[NET.me]='You';chs[0]=chs[1]='dan';chs[NET.me]=c1;}
   ctl=mode==='online'?[0,1].map(i=>i===NET.me?'p1':'net'):(mode==='pvp'||mode==='private')?['p1','p2']:mode==='practice'?['p1','none']:['p1','ai'];tn=names;}
  G={ch:chs,ctl,teams,tm:0,pj:[],zn:[],ts:null,mode,lv,names,tnames:tn,wins:[0,0],round:0,state:'intro',st:1.4,timer:60,dmg:0,best:0,over:false,net:(mode==='online'||mode==='o2')?NET:null};
@@ -289,7 +289,8 @@ const KILL_COINS=25,DIFFM=[1,1.5,2.5],DIFFN=['Easy','Normal','Hard'];
 const dm=()=>G.net?1:(DIFFM[G.lv]||1);
 function resolve(f,o,a,dmg){o.lh=f.i;if(a.flash){o.fl=Math.max(o.fl||0,a.flash);if(!dmg&&!a.stun)return;}const dx=o.x-f.x,dy=o.y-f.y,d=Math.hypot(dx,dy)||1,nx=dx/d,ny=dy/d;
  const m5=f.act==='lt'&&f.chain===4&&!a.nochain&&!a.proj&&!a.aoe;let gbk=0;
- const hvb=f.act==='hv'&&!a.proj&&!a.aoe;
+ const hvb=f.act==='hv'&&!a.proj&&!a.aoe,big=f.act==='hv'||f.act==='sc'||a.gb;
+ if(o.block&&o.bt<.18&&(big||(!a.proj&&!a.aoe&&!a.hv))){f.stun=big?1.2:.8;f.act=null;f.kx=-nx*260;f.ky=-ny*260;o.counter=1.6;if(G.net)pushEv({k:'p',t:f.i});o.sp=Math.min(100,o.sp+(big?30:15));o.block=false;o.stun=0;pop(o.x,o.y-80,'PERFECT BLOCK','#7fd8ff');cam.sh=12;return;}
  if(o.block&&(a.gb||m5||hvb)){gbk=a.gb?2:1;o.block=false;o.st=Math.max(0,o.st-30);pop(o.x,o.y-80,'GUARD BREAK','#ffd166');cam.sh=10;}
  if(o.block&&(!a.aoe||a.blk)){
   if(o.bt<.15&&!a.hv&&!a.proj&&!a.aoe){f.stun=.8;f.act=null;f.kx=-nx*200;f.ky=-ny*200;o.counter=1.6;if(G.net)pushEv({k:'p',t:f.i});o.sp=Math.min(100,o.sp+15);o.block=false;pop(o.x,o.y-80,'PARRY!','#7fd8ff');cam.sh=8;return;}
