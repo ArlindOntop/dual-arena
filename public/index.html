@@ -631,20 +631,24 @@ const NETC=(()=>{let ws=null,id=null,open=false,rooms={},rd;const ready=new Prom
    else if(m.t==='left'){r.peers.delete(m.id);notify(r);}
    else if(m.t==='err')for(const f of[...r.errs])f({code:m.code,message:m.code});};
   ws.onclose=()=>{open=false;for(const n in rooms){rooms[n].peers=new Map();notify(rooms[n]);}setTimeout(connect,1500);};}
- if(/^https?:/.test(location.protocol)){connect();setTimeout(()=>rd(false),4000);}else rd(false);
+ if(/^https?:/.test(location.protocol)){const go=()=>{connect();setTimeout(()=>rd(false),80000);};
+  fetch('/healthz',{cache:'no-store'}).then(r=>{if(r.status===404||r.status===405)rd(false);else if(r.ok)r.text().then(t=>t.trim()==='ok'?go():rd(false)).catch(go);else go();}).catch(go);}else rd(false);
  setInterval(()=>{if(!open)return;for(const n in rooms){const r=rooms[n];if(r.dirty){r.dirty=false;raw({t:'pres',room:n,p:r.mine});}}},40);
  return{lobby:async()=>(await ready)?R('lobby').api:null};})();
 
 const onm=t=>{$('onmsg').textContent=t;};
-(async()=>{try{RM=await NETC.lobby();}catch(e){}
+(async()=>{onm('Connecting to the game server… the free server can take up to a minute to wake up.');try{RM=await NETC.lobby();}catch(e){}
  if(RM){$('qm').disabled=$('orm').disabled=$('o2').disabled=false;const hr=(location.hash.match(/room=([a-z0-9]{1,20})/i)||[])[1];if(hr){$('code').value=hr.toUpperCase();if(/v=2/.test(location.hash))setTimeout(()=>onm('2v2 invite: pick your team, then press 2v2 private online.'),60);else setTimeout(()=>enterRoom('c'+hr.toLowerCase(),2),300);}onm('Online uses the Player 1 keys. Queue for a public 1v1, or enter a room code and send the invite link to a friend.');}
  else onm('Can’t reach the game server right now. Online play needs the hosted site; offline modes still work.');})();
 function nerr(e){onm('Connection problem ('+(e&&e.code||'error')+').'+(e&&e.code==='full'?' That room is full.':'')+'');leaveNet();}
-function leaveNet(){clearTimeout(QT);QK='';if(QO){QO();QO=null;}if(RM)RM.presence({q:null}).catch(()=>{});if(NET){try{NET.off&&NET.off();NET.nr.leave();}catch(e){}NET=null;}}
+function leaveNet(){clearTimeout(QT);QK='';if(QO){QO();QO=null;}if(RM)RM.presence({q:null,mr:null}).catch(()=>{});if(NET){try{NET.off&&NET.off();NET.nr.leave();}catch(e){}NET=null;}}
 function qmate(){const q=RM.peers().filter(p=>p.presence&&p.presence.q).sort((a,b)=>a.presence.q-b.presence.q||(a.peer<b.peer?-1:1)),i=q.findIndex(p=>p.sameTab);return i<0?null:{me:q[i],m:q[i^1]};}
 const pk=x=>[x.me.peer,x.m.peer].sort().join('');
-function qcheck(){const x=qmate();if(!x||!x.m){QK='';clearTimeout(QT);return;}const k=pk(x);if(k===QK)return;QK=k;clearTimeout(QT);
- QT=setTimeout(()=>{const y=qmate();if(y&&y.m&&pk(y)===QK){const k2=QK;clearTimeout(QT);if(QO){QO();QO=null;}RM.presence({q:null}).catch(()=>{});enterRoom('m'+k2,2);}},900);}
+function qgo(k){clearTimeout(QT);if(QO){QO();QO=null;}QK='';RM.presence({q:null,mr:k}).catch(()=>{});enterRoom('m'+k,2);}
+function qcheck(){const ps=RM.peers(),me=ps.find(p=>p.sameTab);if(!me)return;
+ if(QO){const mt=ps.find(p=>!p.sameTab&&p.presence&&p.presence.mr&&p.presence.mr===[me.peer,p.peer].sort().join(''));if(mt){qgo(mt.presence.mr);return;}}
+ const x=qmate();if(!x||!x.m){QK='';clearTimeout(QT);return;}const k=pk(x);if(k===QK)return;QK=k;clearTimeout(QT);
+ QT=setTimeout(()=>{const y=qmate();if(y&&y.m&&pk(y)===QK&&QO)qgo(QK);},700);}
 $('qm').onclick=async()=>{try{await RM.presence({q:Date.now()});onm('Searching for an opponent… press Esc to cancel.');QO=RM.onPeers(qcheck,nerr);qcheck();}catch(e){nerr(e);}};
 $('orm').onclick=()=>{const c=($('code').value||'').toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,20);if(!c){$('code').value=newCode();onm('Press Online room again to open it, then send the invite link that appears.');return;}enterRoom('c'+c,2);};
 $('o2').onclick=()=>{const c=($('code').value||'').toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,20);if(!c){$('code').value=newCode();onm('Press 2v2 private online again to open the room, then send the invite link to the other 3 players.');return;}enterRoom('g'+c,4);};
