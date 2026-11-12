@@ -289,7 +289,8 @@ const KILL_COINS=25,DIFFM=[1,1.5,2.5],DIFFN=['Easy','Normal','Hard'];
 const dm=()=>G.net?1:(DIFFM[G.lv]||1);
 function resolve(f,o,a,dmg){o.lh=f.i;if(a.flash){o.fl=Math.max(o.fl||0,a.flash);if(!dmg&&!a.stun)return;}const dx=o.x-f.x,dy=o.y-f.y,d=Math.hypot(dx,dy)||1,nx=dx/d,ny=dy/d;
  const m5=f.act==='lt'&&f.chain===4&&!a.nochain&&!a.proj&&!a.aoe;let gbk=0;
- if(o.block&&(a.gb||m5)){gbk=m5?1:2;o.block=false;o.st=Math.max(0,o.st-30);pop(o.x,o.y-80,'GUARD BREAK','#ffd166');cam.sh=10;}
+ const hvb=f.act==='hv'&&!a.proj&&!a.aoe;
+ if(o.block&&(a.gb||m5||hvb)){gbk=a.gb?2:1;o.block=false;o.st=Math.max(0,o.st-30);pop(o.x,o.y-80,'GUARD BREAK','#ffd166');cam.sh=10;}
  if(o.block&&(!a.aoe||a.blk)){
   if(o.bt<.15&&!a.hv&&!a.proj&&!a.aoe){f.stun=.8;f.act=null;f.kx=-nx*200;f.ky=-ny*200;o.counter=1.6;if(G.net)pushEv({k:'p',t:f.i});o.sp=Math.min(100,o.sp+15);o.block=false;pop(o.x,o.y-80,'PARRY!','#7fd8ff');cam.sh=8;return;}
   if(a.hv||o.st<dmg*1.5){o.stun=.55;o.block=false;o.st=Math.max(0,o.st-20);dmg*=.5;pop(o.x,o.y-80,'GUARD BREAK','#ffd166');}
