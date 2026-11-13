@@ -430,9 +430,8 @@ function fxDo(f,o,a){if(a.fx==='dec')decoy(f,o);else if(a.fx==='orb'){G.zn.push(
  else if(a.fx==='beat'){let bt=null,bd=1e9;for(const e of G.f){if(e.team===f.team||e.ko)continue;const dd=Math.hypot(e.x-f.x,e.y-f.y);if(dd<bd){bd=dd;bt=e;}}
   if(!bt||bd>150){pop(f.x,f.y-100,'WHIFF','#9ab');return;}
   const an=Math.atan2(f.y-bt.y,f.x-bt.x);f.x=bt.x+Math.cos(an)*42;f.y=bt.y+Math.sin(an)*42;
-  const fin=bt.hp<=110&&!bt.ko;G.bd=G.bd||[];G.bd.push({own:f.i,t:bt.i,k:0,n:0,life:1.4,real:true,fin:fin});
-  pop(f.x,f.y-100,'BEATDOWN','#ffd166');cam.sh=12;
-  if(fin){G.slow=4;G.fin={own:f.i,t:bt.i,tm:0};pop(bt.x,bt.y-130,'FINISH HIM','#ff3355');}}
+  if(bt.hp<=110&&!bt.ko&&!G.net){G.slow=3.6;G.fin={own:f.i,t:bt.i,tm:0,ph:0,hit:0};pop(bt.x,bt.y-130,'FINISH HIM','#ff3355');cam.sh=14;f.inv=4;}
+  else{G.bd=G.bd||[];G.bd.push({own:f.i,t:bt.i,k:0,n:0,life:1.4,real:true});pop(f.x,f.y-100,'BEATDOWN','#ffd166');cam.sh=12;}}
  else if(a.fx==='tstop'){if(G.ts)return;G.ts={team:f.team,t:5,owner:f.i};pop(f.x,f.y-100,'TIME STOP','#9ad8ff');cam.sh=10;}}
 function doThrust(f,k){const S=SH[k],cs=Math.cos(f.face),sn=Math.sin(f.face);
  G.bx=G.bx||[];G.bx.push({x:f.x,y:f.y,a:f.face,t:.22,mx:.22,len:S.len,wid:S.wid,col:S.col});cam.sh=5;
@@ -525,7 +524,7 @@ function runF(f,dt,idle){if(G.ts&&G.ts.team!==f.team&&!f.ko){f.frz=true;f.firing
 function syncIdentity(){for(const g of G.f){if(g===G.f[G.net.me])continue;const r=NET.nr.peers().find(q=>q.peer===NET.slots[g.i]);if(r&&CH[r.presence.w]&&g.ch!==r.presence.w){g.ch=r.presence.w;g.wp=CH[g.ch].w;g.col=CH[g.ch].col;g.mhp=g.hp=CH[g.ch].hp||HP;}}}
 function update(dt){
  if(!G)return;if(G.hs>0){G.hs-=dt;return;}
- if(G.slow>0){G.slow-=dt;dt*=.4;if(G.fin)G.fin.tm+=dt;if(G.slow<=0){G.slow=0;G.fin=null;}}
+ G.rdt=dt;if(G.slow>0){G.slow-=dt;dt*=.4;if(G.slow<=0){G.slow=0;G.fin=null;}}
  G.tm+=dt;
  if(G.ts){G.ts.t-=dt;if(G.ts.t<=0)G.ts=null;}
  const me=G.net?G.f[G.net.me]:null;
@@ -549,6 +548,22 @@ function update(dt){
   for(const f of G.f){if(G.net&&f!==G.f[G.net.me])continue;if(f.team===ow.team||f.ko||f.inv>0)continue;
    if(Math.hypot(f.x-z.x,f.y-z.y)<=z.r){if(f.block&&f.zgb!==z){f.zgb=z;f.block=false;f.stun=Math.max(f.stun,2);f.st=Math.max(0,f.st-30);pop(f.x,f.y-80,'GUARD BREAK','#ffd166');}f.zt+=dt;let n=0;while(f.zt>=.05){f.zt-=.05;n++;}if(n){f.lh=ow.i;f.hp-=3*n;if(f.hp<=0){f.hp=0;f.ko=true;}}}else f.zt=0;}}
   G.zn=G.zn.filter(z=>z.life>0||!z.real&&false);}
+ if(G.fin){const F=G.fin,ow=G.f[F.own],tg=G.f[F.t],rd=G.rdt;F.tm+=rd;
+  if(ow.ko||G.state==='over'){G.fin=null;}
+  else{ow.act=null;ow.stun=0;ow.inv=Math.max(ow.inv,.2);ow.kx=ow.ky=0;ow.block=false;
+   if(!tg.ko){tg.kx=tg.ky=0;tg.stun=0;tg.block=false;tg.frz=false;tg.face=Math.atan2(ow.y-tg.y,ow.x-tg.x);tg.hdm[ow.i]=1;
+    if(F.tm<1.25&&(!tg.act||tg.t>getA(tg.ch,'lt').w+getA(tg.ch,'lt').a+.02)){tg.act='lt';tg.t=0;tg.hdm={};tg.hdm[ow.i]=1;}}
+   const ar=72,pz=[[.0,-1,0],[.38,1,.25],[.78,-1,-.2]];let px=0,py=0;
+   if(F.tm<1.05){let side=-1,back=0;for(const[st,sd,bk]of pz)if(F.tm>=st){side=sd;back=bk;}
+    const an=Math.atan2(ow.y-tg.y,ow.x-tg.x)+side*.95;px=tg.x+Math.cos(an)*(ar+back*26);py=tg.y+Math.sin(an)*(ar+back*26)*.9;
+    if(F.ph<3&&F.tm>=pz[Math.min(2,F.ph)][0]){F.ph++;if(F.ph>1)pop(ow.x,ow.y-110,'DODGE','#7fe8ff');}}
+   else{const an2=Math.atan2(ow.y-tg.y,ow.x-tg.x);px=tg.x+Math.cos(an2)*34;py=tg.y+Math.sin(an2)*34;}
+   const sp=Math.min(1,rd*9);ow.x+=(px-ow.x)*sp;ow.y+=(py-ow.y)*sp;ow.face=Math.atan2(tg.y-ow.y,tg.x-ow.x);
+   if(F.tm>=1.15&&!F.hit&&!tg.ko){F.hit=1;ow.act='hv';ow.t=0;tg.act=null;tg.hdm={};
+    pop(tg.x,tg.y-150,'UPPERCUT','#ffd166');cam.sh=26;G.hs=.12;G.slow=Math.max(G.slow,1.5);
+    for(let i=0;i<26;i++){const a2=i/26*6.283;fx.push({x:tg.x,y:tg.y,z:40,vx:Math.cos(a2)*320,vy:Math.sin(a2)*200,vz:260+Math.random()*220,t:.6,c:i%2?'#fff':'#ffd166',s:3+Math.random()*4});}
+    tg.vz=620;tg.z=Math.max(tg.z,4);tg.spin=1;shotHit(ow,tg,{d:Math.max(1,tg.hp),stun:2.4,kb:150,gb:1,col:'#ffd166'},'beat');}
+   if(F.hit&&tg.z<=0&&tg.vz<=0){G.slow=Math.min(G.slow,.55);}}}
  G.bx=(G.bx||[]).filter(q=>(q.t-=dt)>0);
  G.bd=G.bd||[];for(const b of G.bd){const ow=G.f[b.own],tg=G.f[b.t];b.life-=dt;
   if(!b.real)continue;if(ow.ko||tg.ko||G.state!=='fight'){b.life=0;continue;}
@@ -744,7 +759,7 @@ function draw(){
  let tx=a.x,ty=a.y,spr=0;if(pv){tx=Z.reduce((t,q)=>t+q.x,0)/Z.length;ty=Z.reduce((t,q)=>t+q.y,0)/Z.length;for(const p of Z)for(const q of Z)spr=Math.max(spr,Math.hypot(p.x-q.x,p.y-q.y));}
  if(G.mode==='br'&&a.ko&&L.length){tx=L[0].x;ty=L[0].y;}
  let tz=pv?Math.max(.62,Math.min(1.1,560/(spr+300)*1.1)):G.mode==='br'?.8:1.05,lp=.08,lz=.06;
- if(G.fin){const o1=G.f[G.fin.own],o2=G.f[G.fin.t];tx=(o1.x+o2.x)/2;ty=(o1.y+o2.y)/2+18;tz=2.35;lp=.14;lz=.055;}
+ if(G.fin){const o1=G.f[G.fin.own],o2=G.f[G.fin.t];tx=(o1.x+o2.x)/2;ty=(o1.y+o2.y)/2-70-Math.max(o1.z,o2.z)*.5;tz=1.95;lp=.16;lz=.07;}
  cam.x+=(tx-cam.x)*lp;cam.y+=(ty-cam.y)*lp;cam.z+=(tz-cam.z)*lz;
  const c=P_(0,0,0);
  g.fillStyle=TH.sh;g.beginPath();g.ellipse(c.x,c.y+16*cam.z,R*cam.z,R*.55*cam.z,0,0,7);g.fill();
