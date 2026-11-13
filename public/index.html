@@ -206,7 +206,7 @@ tob:{n:'Tob',col:'#f4d03f',w:'lightning',spd:1,m:{d:1,rc:1.05,w:.95,r:.95},sp:'b
 b:{n:'Bee',col:'#bb6bd9',w:'tattoo',spd:1.02,m:{d:.62,rc:.8,w:.6,r:.6},sp:'ink',s2:'glob',desc:'Fast tattoo-gun needles, short reach. U: ink burst slows. O: ink glob slows.'},
 brad:{n:'Brad',col:'#e74c3c',w:'briefcase',spd:1,m:{d:1,rc:1,w:1,r:1.05},sp:'dice',s2:'shut',desc:'Briefcase swings. U: rolls 3 dice, damage = the three numbers multiplied (max 100). O: slams a laptop shut, stunning you for 1s.'},
 scerra:{n:'Cherry',col:'#ff6fae',w:'palm',spd:1.02,m:{d:.9,rc:.9,w:1,r:1},ov:{lt:{d:35,w:.1,a:.08,r:.32,reach:42,rad:34,kb:150,stun:.4,nochain:1}},sp:'slam',s2:null,desc:'Slaps for 35 damage every 0.5s. U: jumps and lands on you for 120 damage (65% hit chance; dash away or block to halve it).'},
-pulv:{n:'Pulverizer',col:'#b388ff',w:'lightning',spd:1,m:{d:.9,rc:1,w:1,r:1},sp:'orb',s2:'pstun',desc:'Shock gauntlets. U: lightning orb (30% of the map wide) zaps 2 damage every 0.05s to anyone inside. O: hold 1s to charge, release to stun everyone nearby for 1.5s.'},
+pulv:{n:'Pulverizer',col:'#b388ff',w:'lightning',spd:1,cost:35,m:{d:.9,rc:1,w:1,r:1},sp:'orb',s2:'pstun',desc:'Shock gauntlets. U: lightning orb (30% of the map wide) zaps 3 damage every 0.05s (60/s) to anyone inside, and the bar fills fast. O: hold to charge up to 3s, then release — a tap barely stuns, a full charge stuns everyone nearby for 4s.'},
 prof:{n:'Hanan',col:'#e8d5a3',w:'ruler',spd:1,m:{d:.95,rc:1,w:.95,r:1},sp:'quiz',s2:'slip',desc:'Strict classroom teacher. Ruler whacks with long reach. U: surprise pop quiz, a big shockwave that stuns. O: throws detention slips that slow.'},
 god:{n:'God',col:'#ffd700',w:'god',spd:1,hp:500,cost:100,secret:1,m:{d:1,rc:1,w:1,r:1},ov:{lt:{d:25,nochain:1},hv:{d:80}},sp:'tstop',s2:'tele',desc:'500 health. Melee 25, kick 80. U: time stop for 5s (costs a full meter; your allies keep moving). O: teleport next to the nearest enemy and blast everyone around for 15.'},
 sens:{n:'Sensai',col:'#ffa54d',w:'staff',spd:1.02,m:{d:1,rc:1,w:1,r:1},sp:'spirit',s2:'ki',desc:'Staff master. U: Spirit Wave, a full-map beam that follows the enemy for 3s, 75 damage total, and freezes them in place for 3.5s once it hits. O: ki beam, a 0.3s beam for 30 damage. Dashing slows his stamina regen by 50% for 3s.'},
@@ -277,8 +277,8 @@ $('unl').onclick=async()=>{const v=$('sec').value.trim().toLowerCase(),hh=await 
  if(ok){UNL=true;try{localStorage.setItem('daU','1');}catch(e){}cloudSave();buildOpts();showDesc();$('secm').textContent='Unlocked. A new character is in the lists.';}else $('secm').textContent='That code isn’t right.';$('sec').value='';};
 const showDesc=()=>{try{updateKeys($('wp').value,$('wp2').value);}catch(e){}};
 const UN={dan:'DECOY PROTOCOL',bez:'RADIO BLAST',tob:'THUNDER STRIKE',b:'INK STORM',brad:'ROLL THE DICE',scerra:'METEOR DROP',god:'TIME STOP',wil:'LEAD TORNADO',pulv:'THUNDER SPHERE',sens:'SPIRIT WAVE',cas:'RADIUM TOSS',prof:'POP QUIZ!'};
-const OL={yoo:'YOO HOO scream (35 dmg, 40% of map)',ki:'ki beam (30 dmg)',hack:'hack orb (reverses controls)',pistol:'pistol',zap:'zap arc',glob:'ink glob (slows)',shut:'laptop slam (stuns 1s)',tele:'teleport blast',pstun:'hold 1s: stun blast',slip:'detention slip (slows)',mini:'hold: minigun'};
-const ULX={radium:'Throws a slow radium vial straight ahead (narrow, hard to hit). A hit causes stacking radiation: 4 damage every second for the rest of the match (x2 = 8/s), and it breaks guard. Costs a full ultimate bar and has a 1.5s wind-up, so it lands once or twice a match.',spirit:'A full-map beam. Charges 0.9s, then fires for 3s, tracking the enemy. 75 damage total, and freezes the target for 3.5s on hit (breaks guard). Getting hit or perfect-blocked cuts it off.',dec:'No damage. Flashbangs enemies for 2s (their screen whites out; bots stumble around blind). Leaves a decoy and blinks behind them.',dice:'Rolls 3 dice, multiplied: up to 100.',orb:'Lightning orb: 2 damage every 0.05s (40/s) inside it.',tstop:'Time stop for 5s. Allies keep moving.',slam:'Jump and land: 120, 65% hit chance (halved if blocked).'};
+const OL={yoo:'YOO HOO scream (35 dmg, 40% of map)',ki:'ki beam (30 dmg)',hack:'hack orb (reverses controls)',pistol:'pistol',zap:'zap arc',glob:'ink glob (slows)',shut:'laptop slam (stuns 1s)',tele:'teleport blast',pstun:'hold to 3s: stun blast',slip:'detention slip (slows)',mini:'hold: minigun'};
+const ULX={radium:'Throws a slow radium vial straight ahead (narrow, hard to hit). A hit causes stacking radiation: 4 damage every second for the rest of the match (x2 = 8/s), and it breaks guard. Costs a full ultimate bar and has a 1.5s wind-up, so it lands once or twice a match.',spirit:'A full-map beam. Charges 0.9s, then fires for 3s, tracking the enemy. 75 damage total, and freezes the target for 3.5s on hit (breaks guard). Getting hit or perfect-blocked cuts it off.',dec:'No damage. Flashbangs enemies for 2s (their screen whites out; bots stumble around blind). Leaves a decoy and blinks behind them.',dice:'Rolls 3 dice, multiplied: up to 100.',orb:'Lightning orb: 3 damage every 0.05s (60/s) inside it. Costs only 35 meter, so it comes round often.',tstop:'Time stop for 5s. Allies keep moving.',slam:'Jump and land: 120, 65% hit chance (halved if blocked).'};
 function updateKeys(a,b){const u=k=>'<i>'+(UN[k]||'ultimate')+'</i>',o=k=>'<i>'+(CH[k].s2?OL[CH[k].s2]:'none')+'</i>';
  let h='<b>P1</b> WASD move · Shift sprint · Space jump · J light · K heavy · L block · U '+u(a)+' · I dash · O '+o(a);
  if(b)h+=' &nbsp; <b>P2</b> Arrows move · Right Shift sprint · Enter jump · , light · . heavy · / block · ; '+u(b)+' · \' dash · [ '+o(b);
@@ -288,12 +288,12 @@ $('wp').onchange=$('wp2').onchange=showDesc;showDesc();
 function portrait(cvs,k,col){try{const c=cvs.getContext('2d');if(!c||!c.translate)return;c.clearRect(0,0,cvs.width,cvs.height);if(!CH[k]){c.fillStyle='rgba(255,255,255,.85)';c.font='italic 900 '+Math.round(cvs.height*.7)+'px "Barlow Condensed",Impact,sans-serif';c.textAlign='center';c.fillText('?',cvs.width/2,cvs.height*.76);return;}
  const og=g,oc=cam,sc=cvs.height/98,f=mk(0,0,col||CH[k].col,'');f.ch=k;f.wp=CH[k].w;f.col=col||CH[k].col;f.pt=1;f.px=0;f.py=0;
  g=c;cam={x:0,y:0,z:sc,sh:0};c.save();c.translate(cvs.width/2-W/2-6*sc,cvs.height*.94-H/2);try{drawF(f,null);}finally{c.restore();g=og;cam=oc;}}catch(e){}}
-const TAG={dan:'Decoys, flashbangs and control hacks',bez:'Ring-wide radio blast and a pistol',tob:'Lightning bolts and zap arcs',b:'Fast needles and slowing ink',brad:'Dice-roll damage and a stun slam',scerra:'Heavy slaps and a 120-damage drop',pulv:'Lightning orb and a charged stun',prof:'Long reach, shockwave stun and slows',god:'500 health and a five-second time stop',sens:'Full-map beam that freezes you',cas:'Stacking radiation and a scream blast',wil:'Minigun that shreds up close'};
+const TAG={dan:'Decoys, flashbangs and control hacks',bez:'Ring-wide radio blast and a pistol',tob:'Lightning bolts and zap arcs',b:'Fast needles and slowing ink',brad:'Dice-roll damage and a stun slam',scerra:'Heavy slaps and a 120-damage drop',pulv:'Lightning orb and a 4-second charged stun',prof:'Long reach, shockwave stun and slows',god:'500 health and a five-second time stop',sens:'Full-map beam that freezes you',cas:'Stacking radiation and a scream blast',wil:'Minigun that shreds up close'};
 let chIdx=0;const chList=()=>Object.keys(CH).filter(k=>!CH[k].secret||UNL);
 function chStat(l,v,max,txt){return '<div class="st"><span>'+l+'</span><u><s style="width:'+Math.max(2,Math.min(100,v/max*100))+'%"></s></u><em>'+txt+'</em></div>';}
 function renderChars(){const L=chList();chIdx=(chIdx+L.length)%L.length;const k=L[chIdx],c=CH[k],lt=getA(k,'lt'),hv=getA(k,'hv'),sc=getA(k,'sc'),sh=c.s2?SH[c.s2]:null,own=owns(k);
  const ult=ULX[c.sp]||(sc.d+' damage'+(sc.aoe?' to everyone in range':'')+(sc.stun>=.8?', stuns '+sc.stun+'s':'')+'.');
- const ud=sc.d||(c.sp==='dice'?100:c.sp==='orb'?40:c.sp==='spirit'?75:0),sd=sh?sh.d:0,shTxt=!sh?'none':c.s2==='mini'?sh.d+' / bullet':sh.d+(sh.stun?' · stun '+sh.stun+'s':'')+(sh.slow?' · slows':'')+(sh.rev?' · reverses':'');
+ const ud=sc.d||(c.sp==='dice'?100:c.sp==='orb'?60:c.sp==='spirit'?75:0),sd=sh?sh.d:0,shTxt=!sh?'none':c.s2==='mini'?sh.d+' / bullet':sh.d+(sh.stun?' · stun '+sh.stun+'s':'')+(sh.slow?' · slows':'')+(sh.rev?' · reverses':'');
  $('viewer').style.cssText='--cc:'+c.col;$('chName').textContent=c.n;
  $('chMeta').textContent=(own?(FREE_CH.includes(k)?'Free':c.secret?'Secret':'Owned'):'Locked · '+SHOP.ch[k]+' coins')+' · '+(chIdx+1)+' of '+L.length;
  portrait($('chPort'),k);
@@ -301,7 +301,7 @@ function renderChars(){const L=chList();chIdx=(chIdx+L.length)%L.length;const k=
  +chStat('Health',c.hp||HP,500,(c.hp||HP)+' HP')
  +chStat('Light hit',lt.d,40,Math.round(lt.d)+' dmg')
  +chStat('Heavy hit',hv.d,100,Math.round(hv.d)+' dmg')
- +chStat('Ultimate',ud,120,c.sp==='orb'?'40 / sec':c.sp==='dice'?'up to 100':ud?ud+' dmg':'utility')
+ +chStat('Ultimate',ud,120,c.sp==='orb'?'60 / sec':c.sp==='dice'?'up to 100':ud?ud+' dmg':'utility')
  +chStat('Ranged (O)',sd,35,shTxt)
  +chStat('Speed',(c.spd-.8)/.4*100,100,(c.spd*100|0)+'%')
  +chStat('Reach',lt.reach,70,Math.round(lt.reach))
@@ -420,7 +420,7 @@ function decoy(f,o){f.dc={x:f.x,y:f.y,t:3.5};const dx=f.x-o.x,dy=f.y-o.y,d=Math.
  f.x=nx;f.y=ny;f.inv=.4;pop(f.x,f.y-80,'FLASHBANG','#ffffff');
  for(const e of G.f){if(e.team===f.team||e.ko||e.inv>0)continue;if(Math.hypot(e.x-f.x,e.y-f.y)<=(G.mode==='br'?300:520))shotHit(f,e,SH.decstun,'decstun');}}
 function pushEv(e){e.s=++G.net.hs;e.r=G.round;e.tm=G.tm;G.net.ev.push(e);if(G.net.ev.length>12)G.net.ev.shift();}
-function shotHit(f,o,S,k){if(G.net){pushEv({k:'h',t:o.i,d:S.d,a:k,c:0,x:Math.round(f.x),y:Math.round(f.y)});return;}resolve(f,o,S,S.d);}
+function shotHit(f,o,S,k){if(G.net){pushEv({k:'h',t:o.i,d:S.d,a:k,c:0,st:S.stun,x:Math.round(f.x),y:Math.round(f.y)});return;}resolve(f,o,S,S.d);}
 function fxDo(f,o,a){if(a.fx==='dec')decoy(f,o);else if(a.fx==='orb'){G.zn.push({x:f.x+Math.cos(f.face)*70,y:f.y+Math.sin(f.face)*70,vx:Math.cos(f.face)*190,vy:Math.sin(f.face)*190,r:Math.round(Math.min(R*.55,G.mode==='br'?300:1e9)),life:4,own:f.i,real:true});pop(f.x,f.y-100,'LIGHTNING ORB','#d8c2ff');cam.sh=8;}
  else if(a.fx==='spirit'){G.bm=G.bm||[];G.bm.push({own:f.i,x:f.x,y:f.y,a:f.face,t:3,k:0,h:{},real:true});pop(f.x,f.y-100,'SPIRIT WAVE','#7fe8ff');cam.sh=12;}
  else if(a.fx==='radium'){shoot(f,'radium');pop(f.x,f.y-100,'RADIUM TOSS','#9bff4d');cam.sh=6;}
@@ -428,10 +428,11 @@ function fxDo(f,o,a){if(a.fx==='dec')decoy(f,o);else if(a.fx==='orb'){G.zn.push(
 function doYoo(f){const rad=Math.min(420,R*.4);pop(f.x,f.y-100,'YOO HOO!','#7bd88f');cam.sh=10;
  for(let i=0;i<40;i++){const an=i/40*6.283;fx.push({x:f.x,y:f.y,z:30,vx:Math.cos(an)*rad/.35,vy:Math.sin(an)*rad/.35,vz:20,t:.35,c:i%2?'#7bd88f':'#fff'});}
  for(const e of G.f){if(e.team===f.team||e.ko||e.inv>0||Math.abs(e.z-f.z)>60)continue;if(Math.hypot(e.x-f.x,e.y-f.y)<=rad+16)shotHit(f,e,SH.yoo,'yoo');}}
-function doStun(f){pop(f.x,f.y-90,'STUN BLAST','#fff36b');cam.sh=9;
- for(let i=0;i<30;i++){const an=i/30*6.283;fx.push({x:f.x,y:f.y,z:20,vx:Math.cos(an)*420,vy:Math.sin(an)*420,vz:80,t:.35,c:'#fff36b'});}
- for(const e of G.f){if(e.team===f.team||e.ko||e.inv>0||Math.abs(e.z-f.z)>60)continue;if(Math.hypot(e.x-f.x,e.y-f.y)<=SH.pstun.rad+16)shotHit(f,e,SH.pstun,'pstun');}}
-function abil(f){const c=CH[f.ch];if(c.s2==='mini')return f.ovh>0?1:f.heat/3;if(c.s2==='pstun'&&f.charge>0)return f.charge;return 1-Math.max(0,f.cd2)/SH[c.s2].cd;}
+const pstunAmt=c=>+(4*Math.pow(Math.min(3,c)/3,2)).toFixed(2);
+function doStun(f,st){st=st===undefined?4:st;pop(f.x,f.y-90,'STUN '+st.toFixed(1)+'s','#fff36b');cam.sh=4+st*1.5;
+ for(let i=0;i<30;i++){const an=i/30*6.283;fx.push({x:f.x,y:f.y,z:20,vx:Math.cos(an)*(220+st*90),vy:Math.sin(an)*(220+st*90),vz:80,t:.35,c:'#fff36b'});}
+ for(const e of G.f){if(e.team===f.team||e.ko||e.inv>0||Math.abs(e.z-f.z)>60)continue;if(Math.hypot(e.x-f.x,e.y-f.y)<=SH.pstun.rad+16)shotHit(f,e,{...SH.pstun,stun:st},'pstun');}}
+function abil(f){const c=CH[f.ch];if(c.s2==='mini')return f.ovh>0?1:f.heat/3;if(c.s2==='pstun'&&f.charge>0)return f.charge/3;return 1-Math.max(0,f.cd2)/SH[c.s2].cd;}
 function doTele(f,o){const dx=f.x-o.x,dy=f.y-o.y,d=Math.hypot(dx,dy)||1;let nx=o.x-dx/d*70,ny=o.y-dy/d*70;const m=Math.hypot(nx,ny);if(m>R-30){nx*=(R-30)/m;ny*=(R-30)/m;}
  f.x=nx;f.y=ny;f.inv=.25;pop(f.x,f.y-90,'TELEPORT','#ffe27a');cam.sh=6;
  for(let i=0;i<24;i++){const an=i/24*6.283;fx.push({x:f.x,y:f.y,z:20,vx:Math.cos(an)*320,vy:Math.sin(an)*320,vz:100,t:.4,c:'#ffe27a'});}
@@ -470,8 +471,8 @@ f.inv-=dt;f.stun-=dt;f.chainT-=dt;f.comboT-=dt;f.counter-=dt;f.dash-=dt;if(f.com
      if(f.spin>=.35){f.firing=true;f.heat+=dt;if(f.cd2<=0){shoot(f,'mini');f.cd2=SK.cd;}
       if(f.heat>=3){f.ovh=2;f.heat=0;f.firing=false;f.spin=0;pop(f.x,f.y-90,'OVERHEAT','#ff8a4d');}}}
     else{f.spin=Math.max(0,f.spin-dt*2);f.heat=Math.max(0,f.heat-dt*.8);}}
-   else if(k2==='pstun'){if(inp.s2h&&!f.block&&f.cd2<=0)f.charge=Math.min(1,f.charge+dt);
-    else{if(f.charge>=1){doStun(f);f.cd2=SK.cd;}else if(f.charge>0)f.cd2=.8;f.charge=0;}}
+   else if(k2==='pstun'){if(inp.s2h&&!f.block&&f.cd2<=0)f.charge=Math.min(3,f.charge+dt);
+    else{if(f.charge>=.25){doStun(f,pstunAmt(f.charge));f.cd2=Math.max(1.2,SK.cd*(f.charge/3));}else if(f.charge>0)f.cd2=.8;f.charge=0;}}
    else if(k2&&inp.s2&&f.cd2<=0&&!f.block){if(k2==='tele')doTele(f,o);else if(k2==='yoo')doYoo(f);else if(SK.beam){G.bm=G.bm||[];G.bm.push({own:f.i,x:f.x,y:f.y,a:f.face,t:.3,k:0,h:{},real:true,ki:1,len:SK.len});}else shoot(f,k2);f.cd2=SK.cd;}
    sprinting=inp.sprint&&moving&&f.st>5&&!f.block&&!(f.charge>0);
    const v=(f.block?90:sprinting?340:220)*CH[f.ch].spd*(f.slow>0?.55:1)*(f.firing?.45:1)*(f.charge>0?.5:1);if(moving){f.x+=mx*v*dt;f.y+=my*v*dt;}
@@ -493,7 +494,7 @@ function ai(f,o,dt){const s=f.ai||(f.ai={m:'app',u:0,bl:0}),lv=G.lv,rt=[.38,.22,
  if(f.fl>0){const T=performance.now()/1000;return{...i,mx:Math.sin(T*3+f.i),my:Math.cos(T*2.3+f.i)};}
  const k2=CH[f.ch].s2;s.mg=s.mg||0;
  if(k2==='mini'){if(s.mg>0)i.s2h=true;else if(d>110&&Math.random()<dt*.9)s.mg=1+Math.random()*1.5;s.mg-=dt;}
- else if(k2==='pstun'){if(s.pc>0){i.s2h=true;s.pc-=dt;}else if(f.cd2<=0&&d<200&&Math.random()<dt*.7)s.pc=1.05;}
+ else if(k2==='pstun'){if(s.pc>0){i.s2h=true;s.pc-=dt;}else if(f.cd2<=0&&d<200&&Math.random()<dt*.7)s.pc=1+Math.random()*2.2;}
  else if(k2==='yoo'){if(d<Math.min(420,R*.4)-20&&Math.random()<dt*(.5+.4*lv))i.s2=true;}
  else if(k2&&d>110&&Math.random()<dt*(.5+.4*lv))i.s2=true;
  if(s.bl>0)i.block=true;
@@ -530,7 +531,7 @@ function update(dt){
    if(be&&bd>40){const want=Math.atan2(be.y-z.y,be.x-z.x),cur=Math.atan2(z.vy,z.vx);let df=want-cur;while(df>Math.PI)df-=6.2832;while(df<-Math.PI)df+=6.2832;const na=cur+Math.max(-2.4*dt,Math.min(2.4*dt,df));z.vx=Math.cos(na)*190;z.vy=Math.sin(na)*190;}else{z.vx*=.9;z.vy*=.9;}
    z.x+=z.vx*dt;z.y+=z.vy*dt;const zm=Math.hypot(z.x,z.y),lim=R-z.r*.3;if(zm>lim){z.x*=lim/zm;z.y*=lim/zm;}}
   for(const f of G.f){if(G.net&&f!==G.f[G.net.me])continue;if(f.team===ow.team||f.ko||f.inv>0)continue;
-   if(Math.hypot(f.x-z.x,f.y-z.y)<=z.r){if(f.block&&f.zgb!==z){f.zgb=z;f.block=false;f.stun=Math.max(f.stun,2);f.st=Math.max(0,f.st-30);pop(f.x,f.y-80,'GUARD BREAK','#ffd166');}f.zt+=dt;let n=0;while(f.zt>=.05){f.zt-=.05;n++;}if(n){f.lh=ow.i;f.hp-=2*n;if(f.hp<=0){f.hp=0;f.ko=true;}}}else f.zt=0;}}
+   if(Math.hypot(f.x-z.x,f.y-z.y)<=z.r){if(f.block&&f.zgb!==z){f.zgb=z;f.block=false;f.stun=Math.max(f.stun,2);f.st=Math.max(0,f.st-30);pop(f.x,f.y-80,'GUARD BREAK','#ffd166');}f.zt+=dt;let n=0;while(f.zt>=.05){f.zt-=.05;n++;}if(n){f.lh=ow.i;f.hp-=3*n;if(f.hp<=0){f.hp=0;f.ko=true;}}}else f.zt=0;}}
   G.zn=G.zn.filter(z=>z.life>0||!z.real&&false);}
  G.bm=G.bm||[];for(const b of G.bm){const ow=G.f[b.own];b.t-=dt;b.x=ow.x;b.y=ow.y;
   if(!b.real)continue;if(ow.ko||ow.stun>0||G.state!=='fight'){b.t=0;continue;}
@@ -730,7 +731,7 @@ function draw(){
   g.fillStyle='rgba(179,136,255,.22)';g.beginPath();g.ellipse(q.x,q.y,rx,ry,0,0,7);g.fill();
   g.strokeStyle='rgba(220,200,255,.85)';g.lineWidth=2;g.beginPath();g.ellipse(q.x,q.y,rx*pu,ry*pu,0,0,7);g.stroke();
   g.strokeStyle='#fff7a8';g.lineWidth=1.5;for(let i=0;i<6;i++){const an=Math.random()*6.283,an2=an+rnd(1.2),r1=Math.random()*.9,r2=Math.random()*.9;g.beginPath();g.moveTo(q.x+Math.cos(an)*rx*r1,q.y+Math.sin(an)*ry*r1);g.lineTo(q.x+Math.cos(an2)*rx*r2+rnd(10),q.y+Math.sin(an2)*ry*r2+rnd(10));g.stroke();}g.lineWidth=1;}
- for(const f of G.f)if(f.charge>0&&!f.ko){const q=P_(f.x,f.y,0),rr=SH.pstun.rad*cam.z,cr=rr*Math.min(1,f.charge);g.lineWidth=2;g.strokeStyle='rgba(255,243,107,.3)';g.beginPath();g.ellipse(q.x,q.y,rr,rr*.55,0,0,7);g.stroke();g.strokeStyle=f.charge>=2?'#fff':'#fff36b';g.lineWidth=3;g.beginPath();g.ellipse(q.x,q.y,cr,cr*.55,0,0,7);g.stroke();g.lineWidth=1;}
+ for(const f of G.f)if(f.charge>0&&!f.ko){const q=P_(f.x,f.y,0),rr=SH.pstun.rad*cam.z,cr=rr*Math.min(1,f.charge/3);g.lineWidth=2;g.strokeStyle='rgba(255,243,107,.3)';g.beginPath();g.ellipse(q.x,q.y,rr,rr*.55,0,0,7);g.stroke();g.strokeStyle=f.charge>=3?'#fff':'#fff36b';g.lineWidth=3;g.beginPath();g.ellipse(q.x,q.y,cr,cr*.55,0,0,7);g.stroke();g.lineWidth=1;}
  for(const f of G.f)if(f.dc)drawF({...f,x:f.dc.x,y:f.dc.y,z:0,vz:0,act:null,block:false,stun:0,inv:0,dash:0,ko:false,firing:false,dc:null});
  for(const f of[...G.f].sort((p,q)=>p.y-q.y))if(!f.hid)drawF(f);
  for(const f of G.f)if(f.act==='sc'&&!f.ko&&!f.hid)ultFx(f);
@@ -832,7 +833,7 @@ function remote(){const me=G.f[G.net.me];
   g.x+=(p.x-g.x)*.6;g.y+=(p.y-g.y)*.6;g.z=p.z;g.act=p.a||null;g.t=p.t;g.block=!!p.b;g.bt=p.bt;g.inv=p.i;g.stun=p.s;g.dash=p.d;g.hp=p.h;g.mhp=p.m;g.st=p.e;g.sp=p.p;g.ko=!!p.k;g.chain=p.c;
   const fo=foe(g);g.face=Math.atan2(fo.y-g.y,fo.x-g.x);
   for(const e of(p.ev||[])){if(e.s<=(NET.seen[g.i]||0))continue;NET.seen[g.i]=e.s;if(e.t!==me.i||e.r!==G.round||me.ko||G.state!=='fight')continue;
-   if(e.k==='h'){if(me.inv<=0)resolve({x:e.x,y:e.y,act:e.a,chain:e.c,i:g.i,col:g.col,counter:0,sp:0,combo:0,comboT:0,stun:0,hdm:{}},me,getA(g.ch,e.a),e.d);}
+   if(e.k==='h'){if(me.inv<=0)resolve({x:e.x,y:e.y,act:e.a,chain:e.c,i:g.i,col:g.col,counter:0,sp:0,combo:0,comboT:0,stun:0,hdm:{}},me,e.st!==undefined?{...getA(g.ch,e.a),stun:e.st}:getA(g.ch,e.a),e.d);}
    else if(e.k==='p'){me.stun=.8;me.act=null;me.kx=-Math.cos(me.face)*200;me.ky=-Math.sin(me.face)*200;pop(me.x,me.y-80,'PARRIED','#ff6b6b');}}}}
 function leftGame(){if(!G||G.state==='over')return;G.state='over';$('again').hidden=$('swap').hidden=true;$('rt').textContent='Opponent left';$('rs').textContent='The match ended.';$('res').hidden=false;}
 (function(){if(!/^https?:/.test(location.protocol))return;
