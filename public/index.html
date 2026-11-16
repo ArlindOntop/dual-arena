@@ -788,7 +788,7 @@ f.inv-=dt;f.stun-=dt;f.chainT-=dt;f.comboT-=dt;f.counter-=dt;f.dash-=dt;if(f.com
  const d=Math.hypot(f.x,f.y);if(d>R-20){f.x*=(R-20)/d;f.y*=(R-20)/d;}
  for(const q of G.f){if(q===f||q.ko)continue;const dx=f.x-q.x,dy=f.y-q.y,dd=Math.hypot(dx,dy);if(dd<40&&dd>0&&Math.abs(f.z-q.z)<50){f.x+=dx/dd*(40-dd)/2;f.y+=dy/dd*(40-dd)/2;}}
 }
-function ai(f,o,dt){const s=f.ai||(f.ai={m:'app',u:0,bl:0}),lv=G.lv,rt=[.38,.22,.1][lv];s.u-=dt;s.bl-=dt;
+function ai(f,o,dt){const s=f.ai||(f.ai={m:'app',u:0,bl:0}),lv=f.lv===undefined?G.lv:f.lv,rt=[.38,.22,.1][lv];s.u-=dt;s.bl-=dt;
  const eng=getA(f.ch,'lt').reach+34,i={...NI},dx=o.x-f.x,dy=o.y-f.y,d=Math.hypot(dx,dy)||1,nx=dx/d,ny=dy/d;
  if(o.act&&o.act!=='lt'||o.act==='lt'&&o.t<.1){if(d<120&&s.bl<=0&&Math.random()<dt/rt*(.35+.3*lv)){s.bl=.5;if(Math.random()<.3&&f.st>20)i.da=true;}}
  {const dp=dropNear(f);if(dp&&(f.hp<f.mhp*.8||dp.d<d*1.3||dp.d<260)){const m=dp.d||1;return{...i,mx:(dp.x-f.x)/m,my:(dp.y-f.y)/m,sprint:dp.d>120};}}
