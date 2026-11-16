@@ -143,6 +143,44 @@ input:focus,select:focus{outline:none;border-color:var(--yel)}
 @media (max-width:860px){.home{grid-template-columns:1fr}.modes{order:-1;padding:0 6px}.duo{grid-template-columns:1fr}.vs{justify-self:center;font-size:38px}.pp.p2{text-align:left;grid-template-columns:118px 1fr;border-right:2px solid #000;border-left:10px solid var(--pc);padding:8px 14px 8px 8px}.pp.p2 canvas{order:0;transform:none}.pp.p2 ul{justify-content:flex-start}}
 @media (max-width:560px){.modes{grid-template-columns:repeat(2,1fr);gap:14px}.tile,.tile.big{grid-column:span 2;min-height:76px}.tile.big b{font-size:36px}.online{grid-template-columns:1fr 1fr}.pp{grid-template-columns:84px 1fr}.pp canvas{width:84px;height:84px}.pp h2{font-size:30px}.fight{font-size:32px}.roster{grid-template-columns:repeat(auto-fill,minmax(104px,1fr))}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+/* ---------- polish pass ---------- */
+.scr::before{content:"";position:fixed;inset:-20%;pointer-events:none;z-index:-1;background:repeating-linear-gradient(115deg,rgba(255,255,255,.028) 0 2px,transparent 2px 46px);animation:drift 14s linear infinite}
+@keyframes drift{to{transform:translateX(46px)}}
+.logo b:last-child{position:relative;overflow:hidden}
+.logo b:last-child::after{content:"";position:absolute;top:0;bottom:0;left:-60%;width:40%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.75),transparent);transform:skewX(-18deg);animation:shine 4.5s ease-in-out infinite}
+@keyframes shine{0%,55%{left:-60%}100%{left:130%}}
+.tile{overflow:visible}
+.tile>span::after{content:"";position:absolute;top:0;bottom:0;left:-40%;width:22%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.28),transparent);transform:skewX(-18deg);opacity:0;pointer-events:none}
+.tile:hover:not(:disabled)>span::after{opacity:1;animation:sweep .6s ease-out}
+@keyframes sweep{from{left:-30%}to{left:120%}}
+.tile:hover:not(:disabled) b{letter-spacing:.012em;transition:letter-spacing .15s}
+.modes .tile{animation:tin .45s cubic-bezier(.2,.8,.2,1) both}
+.modes .tile:nth-child(1){animation-delay:.04s}.modes .tile:nth-child(2){animation-delay:.1s}.modes .tile:nth-child(3){animation-delay:.16s}.modes .tile:nth-child(4){animation-delay:.22s}.modes .tile:nth-child(5){animation-delay:.28s}.modes .tile:nth-child(n+6){animation-delay:.34s}
+@keyframes tin{from{opacity:0;transform:translateX(-34px) skewX(-6deg)}to{opacity:1;transform:none}}
+.b:hover:not(:disabled){box-shadow:0 0 0 2px rgba(255,214,10,.0)}
+.b.go,.b.hot{box-shadow:inset 0 -3px 0 rgba(0,0,0,.25)}
+.b.go:hover:not(:disabled),.b.hot:hover:not(:disabled){filter:drop-shadow(0 0 8px rgba(255,214,10,.65))}
+.chip{transition:border-color .12s,transform .12s}button.chip:hover{transform:translateY(-1px)}
+.rt{transition:transform .12s,filter .12s}.rt:hover{transform:translateY(-4px) scale(1.03);z-index:2;filter:drop-shadow(0 6px 0 #000)}
+.rt.s1,.rt.s2{z-index:1}
+.card{transition:transform .14s,box-shadow .14s}.card:hover{transform:translate(-3px,-3px);box-shadow:8px 8px 0 #000}
+.pp{animation:ppin .4s cubic-bezier(.2,.8,.2,1) both}.pp.p2{animation-name:ppin2}
+@keyframes ppin{from{opacity:0;transform:translateX(-40px)}to{opacity:1;transform:none}}
+@keyframes ppin2{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:none}}
+.vs{animation:vsp 1.6s ease-in-out infinite}
+@keyframes vsp{0%,100%{transform:scale(1) skewX(-6deg)}50%{transform:scale(1.14) skewX(-6deg);text-shadow:4px 4px 0 #000,0 0 22px rgba(255,214,10,.7)}}
+.fight::before{animation:fpulse 1.8s ease-in-out infinite}
+@keyframes fpulse{0%,100%{box-shadow:6px 6px 0 #000,0 0 0 rgba(255,214,10,0)}50%{box-shadow:6px 6px 0 #000,0 0 26px rgba(255,214,10,.65)}}
+.fight span{transition:letter-spacing .15s}.fight:hover span{letter-spacing:.03em}
+.vstage canvas{animation:vfloat 3.2s ease-in-out infinite}
+@keyframes vfloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+.st u s{transition:width .5s cubic-bezier(.2,.8,.2,1)}
+.arrow{transition:background .12s,color .12s,transform .1s}.arrow:active{transform:scale(.92)}
+.dots i{transition:background .15s,width .15s}.dots i.on{width:26px}
+.qbar s{transition:width .5s ease}
+#res h2{animation:rpop .55s cubic-bezier(.2,1.4,.3,1) both}
+@keyframes rpop{from{opacity:0;transform:scale(1.5) skewX(-8deg)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.scr::before,.logo b:last-child::after,.vs,.fight::before,.vstage canvas,.modes .tile,.pp,#res h2{animation:none!important}.tile:hover:not(:disabled)>span::after{animation:none}}
 </style></head><body><div class="wrap">
 <div class="stage"><canvas id="cv" width="960" height="540"></canvas>
 <div class="ov scr" id="menu">
